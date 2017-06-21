@@ -1,0 +1,154 @@
+package paga;
+
+import java.awt.BorderLayout;
+import java.awt.Button;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.Graphics;
+import java.awt.TextField;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+
+public class Gyungma extends JFrame implements ActionListener{
+   
+   JButton bt = new JButton("베팅");            	 // 베팅하기 버튼
+   JLabel btmy = new JLabel("베팅금액 : ");     	 // 베팅 금액 글씨
+   TextField bt_money = new TextField(10);      	 // 베팅 금액
+   JLabel hc = new JLabel("말 선택 : ");        	 // 말 선택 글씨
+   Choice combo;                              		 // 말 보기 상자
+   JButton start = new JButton("시작");         	 // 시작 버튼
+   ScreenPanel screenpanel = new ScreenPanel();      // 스크린
+   ResultPanel resultpanel = new ResultPanel();      // 결과
+   JPanel buttompanel = new JPanel();                // 베팅 버튼 & 금액 / 말 선택 버튼/말 보기 선택/ 시작 버튼
+   JLabel screen = new JLabel();
+   JLabel result = new JLabel();
+   
+
+   public Gyungma() {
+      
+      setTitle("경마게임");
+      setBounds(0, 0, 1100, 600);
+      setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      setLayout(new BorderLayout());
+      
+//      상단 부분
+      
+     screenpanel.setBackground(Color.BLACK);
+     resultpanel.setBackground(Color.GREEN);
+     add(screenpanel,BorderLayout.CENTER);
+     add(resultpanel,BorderLayout.EAST);
+      
+//      하단 부분
+      
+      combo = new Choice();
+      combo.add("선택해 주세요");
+      combo.add(" 1번 마 ");
+      combo.add(" 2번 마 ");
+      combo.add(" 3번 마 ");
+      combo.add(" 4번 마 ");
+      combo.add(" 5번 마 ");
+      combo.add(" 6번 마 ");
+      
+      buttompanel.add(btmy);
+      buttompanel.add(bt_money);
+      buttompanel.add(hc);
+      buttompanel.add(combo);
+      buttompanel.add(bt);
+      buttompanel.add(start);
+      
+      buttompanel.setBackground(Color.MAGENTA);
+      add(buttompanel,BorderLayout.SOUTH);
+      
+//	버튼의 action 값
+      bt.addActionListener(this);
+      start.addActionListener(this);
+      
+    
+//   결과 값 출력
+      setVisible(true);
+      
+   }
+  
+
+
+@Override
+public void actionPerformed(ActionEvent e) {
+	
+	switch (e.getActionCommand()) {
+	case "베팅":
+		String item = bt_money.getText();
+		
+		if(item.trim().length() >0 && combo.getSelectedIndex() >0 ) {
+			
+			JOptionPane.showMessageDialog(bt, "베팅 완료.");
+		}else if(item.trim().length() >0 && combo.getSelectedIndex() ==0){
+			JOptionPane.showMessageDialog(combo, "말 선택을 해주세요");
+		}else if(item.trim().length() == 0 && combo.getSelectedIndex() > 0){
+			JOptionPane.showMessageDialog(bt_money,"베팅 금액을 입력해주세요");
+		}else {
+			JOptionPane.showMessageDialog(bt, "말 선택과 베팅 금액을 입력해주세요");	
+		}
+		
+		break;
+
+	case "시작":
+		Thread thread = new Thread(screenpanel);
+		thread.start();
+		break;
+	}
+	
+	
+	
+	
+}
+
+
+public static void main(String[] args) {
+	Gyungma frame = new Gyungma();
+}
+   
+   
+}
+
+
+class ScreenPanel extends JPanel implements Runnable{
+	
+	
+	@Override
+	public void paint(Graphics g) {
+		
+	}
+
+	@Override
+	public void run() {
+		
+	}
+	
+
+}
+
+class ResultPanel extends JPanel {
+	
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
