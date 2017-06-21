@@ -3,6 +3,7 @@ package racingHorse;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -16,6 +17,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 
 public class MainFrame extends JFrame {
 	//	메인 프레임에 모든 패널에 관한 정보와 main함수를 가지고 있다.
@@ -30,6 +32,8 @@ public class MainFrame extends JFrame {
 	private MenuPanel menuPanel = new MenuPanel(racingPanel);				//	메뉴 패널
 	private JPanel broadcastingPanel = new JPanel();						//		
 	private static JLabel rankingLabel = new JLabel("순위");					//	순위 표시 
+	
+	private static User user = new User("LocalUser", 10000);
 	
 	public MainFrame() {
 		setTitle("경마 게임");
@@ -68,6 +72,10 @@ public class MainFrame extends JFrame {
 		}
 		str += "</html>";
 		rankingLabel.setText(str);
+	}
+
+	public static User getUser() {
+		return user;
 	}
 }
 
@@ -135,18 +143,19 @@ class RacingPanel extends JPanel implements Runnable {
 		
 		while (true) {
 			if (isAllHorseFinished()) {
-				MenuPanel.setEnableButton(true);
+				MenuPanel.racingResult();
 				break;
 			}
 			for(int i = 0; i < horses.length ; i++){
 				if(horses[i].getPosition_X() < FINISH_POINT){
 					horses[i].move(new Random().nextInt(6)+1);
+					if(i == 0) horses[i].move(2);
 				}else{
 					horses[i].moveTo(FINISH_POINT);
 				}
 			}
 
-			//			경주마의 순위를 실시간으로 매긴다.
+			//	경주마의 순위를 실시간으로 매긴다.
 			for(int i = 0; i < horses.length-1; i++){
 				int max = i;
 				if(isFinished(horses[rank[i]])){			//	이미 결승을 통과한 경주마의 순위는 바뀌지 않는다.
@@ -159,9 +168,6 @@ class RacingPanel extends JPanel implements Runnable {
 						rank[j] = temp;
 					}
 				}
-			}
-			for(int i=0; i < rank.length; i++){
-				System.out.println("rank[" + i +"]" + " = " + rank[i] + " pos : " + horses[rank[i]].getPosition_X());
 			}
 			MainFrame.printStatus(rank);
 			repaint();
@@ -215,9 +221,11 @@ class RacingPanel extends JPanel implements Runnable {
 class MenuPanel extends JPanel implements ActionListener{
 	private RacingPanel racingPanel;
 	private String[] horseNames;
-	private JComboBox horseList1;
-	private JComboBox horseList2;
+	private static JComboBox horseList1;
+	private static JComboBox horseList2;
 	private static JButton selectButton = new JButton("선택 완료");
+	private static JTextField bettingValField = new JTextField();
+	private static JLabel amountLabel = new JLabel();
 	
 	public MenuPanel(RacingPanel racingPanel){
 		this.racingPanel = racingPanel;
@@ -227,33 +235,121 @@ class MenuPanel extends JPanel implements ActionListener{
 			horseNames[i+1] = racingPanel.getHorses()[i].getName();
 		}
 		
+		bettingValField.setPreferredSize(new Dimension(200, 30));
 		horseList1 = new JComboBox(horseNames);
 		horseList2 = new JComboBox(horseNames);
 		
 		setPreferredSize(new Dimension(600,  300));
-		setLayout(new GridLayout(2,3));
+//		setLayout(new GridLayout(2,3));
+		setLayout(new FlowLayout());
 		
+		add(new JLabel());
 		add(horseList1);
 		add(horseList2);
-		add(new JLabel("남은 금액 : 1000원"));
-		add(new JLabel("배팅액 : 100원"));
+		amountLabel.setText("남은 금액 : "+ MainFrame.getUser().getBalance() + "원");
+		add(amountLabel);
+		add(new JLabel("배팅액 : "));
+		add(bettingValField);
+		
 		add(new JLabel(" "));
 		add(selectButton);
 		
 		selectButton.addActionListener(this);
 	}
 
-	public static void setEnableButton(boolean b){
-		selectButton.setEnabled(b);
-	}
-
 	@Override
 	public void actionPerformed(ActionEvent e) {
+//		TODO : 1위와 2위에 중복된 경주마를 걸지 못하도록 설정해야 함.
 		
+		try{
+//			경주마를 선택하지 않으면 에러메세지
+			if(horseList1.getSelectedIndex() == 0){
+				JOptionPane.showMessageDialog(null, "경주마를 선택하지 않았습니다.");
+				return;
+			}
+//			배팅금액이 없으면 에러메세지
+			if(bettingValField.getText().trim().equals("")){
+				JOptionPane.showMessageDialog(null, "배팅 금액을 설정하여 주십시오.");
+				return;
+			}
+//			금액이 0보다 작거나 같으면 에러메세지
+			if( bettingValField.getText().trim().equals("0") || Integer.parseInt(bettingValField.getText().trim()) < 0){
+				JOptionPane.showMessageDialog(null, "배팅금액은 0원 보다 커야 합니다.");
+				return;
+			}
+//			금액 초과
+			if(Integer.parseInt(bettingValField.getText().trim()) > MainFrame.getUser().getBalance()){
+				JOptionPane.showMessageDialog(null, "배팅 금액이 사용자의 잔액보다 많습니다.");
+				bettingValField.setText(MainFrame.getUser().getBalance()+ "");
+				return;
+			}
+//			디버그를 위해 선택값이 제대로 설정되었는지 출력
+//			이후에 삭제 요망.
+			System.out.println(racingPanel.getHorses()[horseList1.getSelectedIndex()].getName() + "에 "
+					+ Integer.parseInt(bettingValField.getText().trim()) + "원을 걸었습니다.");
+			
+		}catch(NumberFormatException e1){
+//			배팅금액을 parsing하는 과정에서 배팅금액에 숫자가 아닌 문자열이 들어가 파싱이 안되면 예외처리를 한다.
+			JOptionPane.showMessageDialog(null, "금액은 숫자만 입력할 수 있습니다.");
+			return;
+		}
 		Thread thread = new Thread(racingPanel);
 		thread.start();
+		
 		selectButton.setEnabled(false);
-//			JOptionPane.showMessageDialog(null, horseList1.getSelectedItem() + "를 선택하셨습니다.");
+		horseList1.setEnabled(false);
+		horseList2.setEnabled(false);
+		bettingValField.setEnabled(false);
 			
+	}
+	
+	public static void racingResult(){
+//		메뉴에서 배팅의 정보를 모두 가지고 있기 때문에 결과 처리를 다시 받아온다.
+//		1. 배팅결과 배분 -> 랭킹 결과에 따라 배팅금액을 user 에게 배분한다.
+//			1-1. 순위 비교 -> 배팅한 말의 순위를 맞추었으면 배팅금액만큼 돌려준다.
+//		2. 버튼 활성화 -> 이중 쓰레드 실행을 막기 위해 비활성화 한 버튼과 콤보박스들을 경기 종료 후 다시 활성화 한다.
+//		3. user의 잔액 재표시 -> 배팅 결과에 따른 잔액을 다시 refresh한다.
+//		4. 파산일 경우 에러메세지 출력과 게임 종료
+
+//		배팅결과 및 순익분배
+		double bettingRate = 1;	
+		if(RacingPanel.getRank()[0]+1 == horseList1.getSelectedIndex()){
+//			1위의 말을 맞추면 배팅률만큼 돌려준다.
+//			현재 임시로 배팅률은 100%로 설정해놓는다.
+			MainFrame.getUser().addBalance((int)(Integer.parseInt(bettingValField.getText().trim()) * bettingRate));
+		}
+		else{
+			MainFrame.getUser().addBalance(-1 * (int)(Integer.parseInt(bettingValField.getText().trim()) * bettingRate));
+		}
+		
+		if(horseList2.getSelectedIndex() != 0){
+//			2위의 말에 배팅했을 경우 추가 배팅
+			if(RacingPanel.getRank()[1]+1 == horseList2.getSelectedIndex()){
+//			2위의 말을 맞추면 배팅률만큼 돌려준다.
+//			현재 임시로 배팅률은 100%로 설정해놓는다.
+				MainFrame.getUser().addBalance((int)(Integer.parseInt(bettingValField.getText().trim()) * bettingRate));
+			}
+			else{
+				MainFrame.getUser().addBalance(-1 * (int)(Integer.parseInt(bettingValField.getText().trim()) * bettingRate));
+			}
+		}
+		
+//		버튼 활성화
+		selectButton.setEnabled(true);
+		horseList1.setEnabled(true);
+		horseList2.setEnabled(true);
+		bettingValField.setEnabled(true);
+		
+//		User의 잔액 재표시
+		amountLabel.setText("남은 금액 : "+ MainFrame.getUser().getBalance() + "원");
+		
+//		파산일 경우 에러메세지와 게밍 종료
+		if(MainFrame.getUser().getBalance() <= 0){
+//			TODO : 한상수온  표시
+			JOptionPane.showMessageDialog(null, "파산하였습니다.");
+			System.exit(0);
+		}
+		
+		
 	}
 }
