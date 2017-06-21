@@ -9,6 +9,7 @@ import java.awt.Graphics;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Date;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -25,6 +26,7 @@ public class MainFrame extends JFrame {
 	public static final int WIDTH = 1200;
 	public static final int LANE_SIZE = 60;
 	
+//	말의 수를 challengerNumber로 수정할 수 있다.
 	private int challengerNumber = 6; 										//	참가자 수
 	private RacingPanel racingPanel = new RacingPanel(challengerNumber);	//	경주트랙 패널
 	private JPanel upPanel = new JPanel();									//	menu + ranking
@@ -51,7 +53,7 @@ public class MainFrame extends JFrame {
 		rankingPanel.add(rankingLabel);
 //		순위를 텍스트로 표시하기 위해 rankingLabel을 사용
 		rankingLabel.setText("순위");
-		rankingLabel.setFont(new Font("Dialog", Font.BOLD, 30));
+		rankingLabel.setFont(new Font("Dialog", Font.BOLD, 28));
 		add(upPanel, BorderLayout.NORTH);
 		add(racingPanel, BorderLayout.CENTER);
 		add(broadcastingPanel, BorderLayout.SOUTH);
@@ -66,6 +68,9 @@ public class MainFrame extends JFrame {
 
 	public static void printStatus(int rank[]){
 //		순위를 실시간으로 표시하기 위해 racingPanel에서 호출 할 수 있도록 static으로 구현하였다.
+//		원래는 JLabel 하나에 여러줄을 삽입할 수 없지만 꼼수로 HTML을 사용하여 여러줄을 넣을 수 있다.
+//		<br>마다 줄바꿈이 되며 아래와 같은 양식으로 작성할 수 있다.
+//		<HTML> ... <br> ... <br> ... </HTML>
 		String str = "<html>순위<br>";
 		for(int i = 0; i < rank.length; i++){
 			str += (i+1) + "위 : " + (rank[i]+1) + "번마<br>";
@@ -81,12 +86,15 @@ public class MainFrame extends JFrame {
 
 class RacingPanel extends JPanel implements Runnable {
 //	경주마가 달리는 것을 표현하기 위해 JPanel의 paint()함수와 Runnable의 run() 함수를 override 하여 사용한다. 
-	public static final int START_POINT = 0; 			// 출발지점
-	public static final int FINISH_POINT = 900; 		// 도착지점
+	public static final int START_POINT = 10; 			// 출발지점
+	public static final int FINISH_POINT = 980; 		// 도착지점
 	
 	private Horse[] horses;
 	private static int[] rank;
 
+	private String countDown = "";
+	private Font countDownFont = new Font("Dialog", Font.BOLD, 30);
+	
 	public RacingPanel(int challengerNumber) {
 		horses = new Horse[challengerNumber];
 		rank = new int[challengerNumber];
@@ -127,29 +135,54 @@ class RacingPanel extends JPanel implements Runnable {
 		for(int i = 0; i < horses.length; i++){
 //			말 각각의 위치를 받아와서 그린다.
 			try{
-				g.fillOval(horses[i].getPosition_X(), i *MainFrame.LANE_SIZE, 60, MainFrame.LANE_SIZE);
+				g.fillOval(horses[i].getPosition_X(), horses[i].getPosition_Y(), 60, MainFrame.LANE_SIZE);
 			}catch(NullPointerException e){
 				e.printStackTrace();
 			}
 		}
+		
+//		카운트다운
+//		g.setColor(Color.GRAY);							//	글자 그림자
+//		g.setFont(new Font("Dialog", Font.BOLD, 35));	//	글자 그림자
+//		g.drawString("3", MainFrame.WIDTH/2 - 50, 31);	//	글자 그림자
+		g.setColor(Color.BLACK);
+		g.setFont(countDownFont);
+		g.drawString(countDown, MainFrame.WIDTH/2 - 80, 80);
 	}
 
 	@Override
 	public void run() {
-
+//		카운트다운
+		
+		for(int i = 3; i > 0; i--){
+			for(int fontSize= 100; fontSize > 50; fontSize--){
+				countDown = i + "";
+				countDownFont = new Font("Dialog", Font.BOLD, fontSize);
+				repaint();
+				try { Thread.sleep(20); } catch (InterruptedException e) { e.printStackTrace();}
+			}
+		}
+		countDownFont = new Font("Dialog", Font.BOLD, 80);
+		countDown = "GO!";
 		for(int i = 0; i < horses.length; i++){
 			rank[i] = i;
 		}
 		
+		long startTime = System.currentTimeMillis();
 		while (true) {
+//			CountDown 메세지 마지막 "GO!" 없애기 위해 1초가 지났는지 확인한다.
+			if( System.currentTimeMillis() - startTime > 800){
+				countDown = "";
+			}
 			if (isAllHorseFinished()) {
+//				모든 말이 결승선에 도착하면 MenuPanel에서 결과를 정리한다.
 				MenuPanel.racingResult();
 				break;
 			}
+//			아직 도착하지 않은 말이 있으면 각 말의 X좌표에 값을 더해 말을 이동시킨다.
 			for(int i = 0; i < horses.length ; i++){
 				if(horses[i].getPosition_X() < FINISH_POINT){
 					horses[i].move(new Random().nextInt(6)+1);
-					if(i == 0) horses[i].move(2);
 				}else{
 					horses[i].moveTo(FINISH_POINT);
 				}
@@ -285,7 +318,7 @@ class MenuPanel extends JPanel implements ActionListener{
 			}
 //			디버그를 위해 선택값이 제대로 설정되었는지 출력
 //			이후에 삭제 요망.
-			System.out.println(racingPanel.getHorses()[horseList1.getSelectedIndex()].getName() + "에 "
+			System.out.println(racingPanel.getHorses()[horseList1.getSelectedIndex()-1].getName() + "에 "
 					+ Integer.parseInt(bettingValField.getText().trim()) + "원을 걸었습니다.");
 			
 		}catch(NumberFormatException e1){
