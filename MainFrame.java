@@ -7,6 +7,8 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
+import java.awt.Image;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Date;
@@ -109,6 +111,7 @@ class RacingPanel extends JPanel implements Runnable {
 
 	@Override
 	public void paint(Graphics g) {
+
 //		배경 그리기
 		for(int i = 0; i < horses.length; i++){
 			g.setColor(new Color((i % 2 == 0 ? 183 : 0), (i % 2 == 0 ? 255 : 204), (i % 2 == 0 ? 190 : 19)));
@@ -129,20 +132,32 @@ class RacingPanel extends JPanel implements Runnable {
 		g.setColor(Color.WHITE);
 		g.fillRect(0, horses.length *MainFrame.LANE_SIZE , MainFrame.WIDTH, horses.length*MainFrame.LANE_SIZE);
 		
-		
+	
 //		말 그리기
-		g.setColor(Color.PINK);
+//		g.setColor(Color.PINK);
 		for(int i = 0; i < horses.length; i++){
 //			말 각각의 위치를 받아와서 그린다.
 			try{
-				g.fillOval(horses[i].getPosition_X(), horses[i].getPosition_Y(), 60, MainFrame.LANE_SIZE);
+//				drawImage(img,  dx1,  dx2,  dy2, sx1, sy1, sx2, sy2, observer) : 원본이미지를 변형시켜 윈도우에 표시함
+				g.drawImage(horses[i].getImageInfo().getImage(),		// Image
+						horses[i].getPosition_X(),						// 윈도우에 이미지가 표시될 시작 X 좌표
+						horses[i].getPosition_Y(),						// 윈도우에 이미지가 표시될 시작 Y 좌표
+						horses[i].getPosition_X() + 97,					// 윈도우에 이미지가 표시될 끝 X 좌표 = 시작좌표 + 말 가로 크기
+						horses[i].getPosition_Y() + 60,					// 윈도우에 이미지가 표시될 끝 Y 좌표 = 시작좌표 + 말 세로 크기
+						horses[i].getImageInfo().getStartX(),			// 읽기 시작할 원본 이미지의 시작 X 좌표
+						horses[i].getImageInfo().getStartY(),			// 읽기 시작할 원본 이미지의 시작 Y 좌표
+						horses[i].getImageInfo().getEndX(),				// 읽기 시작할 원본 이미지의 끝 X 좌표
+						horses[i].getImageInfo().getEndY(),				// 읽기 시작할 원본 이미지의 끝 Y 좌표
+						this);
+				
 			}catch(NullPointerException e){
-				e.printStackTrace();
+//				e.printStackTrace();
+				System.err.println("이미지 파일을 불러오는데 실패하였습니다.");
 			}
 		}
 		
 //		카운트다운
-//		g.setColor(Color.GRAY);							//	글자 그림자
+//		g.setColor(Color.GRAY);							//	TODO : 글자 그림자
 //		g.setFont(new Font("Dialog", Font.BOLD, 35));	//	글자 그림자
 //		g.drawString("3", MainFrame.WIDTH/2 - 50, 31);	//	글자 그림자
 		g.setColor(Color.BLACK);
@@ -182,7 +197,8 @@ class RacingPanel extends JPanel implements Runnable {
 //			아직 도착하지 않은 말이 있으면 각 말의 X좌표에 값을 더해 말을 이동시킨다.
 			for(int i = 0; i < horses.length ; i++){
 				if(horses[i].getPosition_X() < FINISH_POINT){
-					horses[i].move(new Random().nextInt(6)+1);
+					horses[i].move(new Random().nextInt(12)+1);
+					horses[i].getImageInfo().nextImage();
 				}else{
 					horses[i].moveTo(FINISH_POINT);
 				}
@@ -204,7 +220,7 @@ class RacingPanel extends JPanel implements Runnable {
 			}
 			MainFrame.printStatus(rank);
 			repaint();
-			try { Thread.sleep(10); } catch (InterruptedException e) { e.printStackTrace();}
+			try { Thread.sleep(35); } catch (InterruptedException e) { e.printStackTrace();}
 		}
 	}
 
