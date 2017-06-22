@@ -1,7 +1,9 @@
 package racingHorse;
 
 import java.awt.Image;
+import java.awt.Toolkit;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.SortedSet;
 
 import javax.swing.ImageIcon;
@@ -11,13 +13,13 @@ public class Horse {
 	private int position_X;
 	private int position_Y;
 //	private HorseImage[] imageSet = new HorseImage[10];		//	TODO 차후에 랜덤 이미지를 갖고오기 위한 배열
-	private HorseImage image;
+	private HorseImageInfo imageInfo;
 
 	public Horse(String name, int position_X, int position_Y) {
 		this.name = name;
 		this.position_X = position_X;
 		this.position_Y = position_Y;
-		HorseImage image = new HorseImage("HorseSpriteSheetWhite.png", HorseImage.SPRITE_TYPE, 3, 5);
+		imageInfo = new HorseImageInfo("./src/HorseSpriteSheetWhite.png", HorseImageInfo.SPRITE_TYPE, 3, 5);
 	}
 
 	public int move(int pos) {
@@ -50,20 +52,21 @@ public class Horse {
 		return name;
 	}
 
-	public HorseImage getImage() {
-		return image;
+	public HorseImageInfo getImageInfo() {
+		return imageInfo;
 	}
 	
 	
 
 }
 
-class HorseImage{
+class HorseImageInfo{
 //	말의 이미지가 여러개일 경우를 고려하여 객체화 하여 어떤 이미지든 타입만 알면 수정할 수 있도록 한다.
 	public static final int MULTI_IMAGE_TYPE = 0;		//	여러개의 이미지를 사용하여 매번 다른 이름의 이미지 파일을 사용할 경우
 	public static final int SPRITE_TYPE = 1;			//	한개의 스프라이트 이미지를 사용하여 그림좌표만 바뀔 경우
 	
 	private String fileName;				//	파일 명
+	private Image image;
 	private int imageType;					//	MULTI_IMAGE_TYPE(0) 또는 SPRITE_TYPE(1)
 	private int originalWidth;				//	원본 파일의 가로 크기
 	private int originalHeight;				//	원본 파일의 세로 크기
@@ -77,29 +80,29 @@ class HorseImage{
 	private int endX;
 	private int endY;
 	
-	public HorseImage(String fileName, int imageType, int row, int col) {
+	public HorseImageInfo(String fileName, int imageType, int row, int col) {
 		this.fileName = fileName;
 		this.imageType = imageType;
 		this.row = row;
 		this.col = col;
-		Image img = new ImageIcon(fileName).getImage();
+		Image img = new ImageIcon(fileName).getImage();			// 가로세로 크기 측정을 위해 사용 -> 가로세로가 0이면 Fail
+		image =  Toolkit.getDefaultToolkit().getImage(fileName);
 		this.originalWidth = img.getWidth(null);
 		this.originalHeight = img.getHeight(null);
-		width = originalWidth / col;					//	출력할 이미지의 가로 크기 = 전체 가로 / 세로줄 수
+		width = originalWidth / col;					//	출력할 이미지의 가로 크기 = 전체 가로 / 세로줄 수  
 		height = originalHeight / row;					//	출력할 미이지의 세로 크기 = 전체 세로 / 가로줄 수
-		resetImage();
-		System.out.println(width + " " + height);		//	TO REMOVE : 디버그용 출력
+//		resetImage();									//	이미지 초기화 -> 꼭 안해도 됌
+		imageCount = new Random().nextInt(row * col);	//	이미지 랜덤선택 -> 꼭 안해도 됌
 	}
 	
-	public HorseImage nextImage(){
-		imageCount = imageCount % (col * row);
+	public HorseImageInfo nextImage(){
+		imageCount = (imageCount+1) % (col * row);
 		if(imageType == SPRITE_TYPE){
 //			스프라이트 타입일 경우 fileName은 변하지 않고 시작좌표와 끝좌표만 바뀐다.
 			startX = (imageCount % col) * width;
-			startY = (imageCount / row) * height;
+			startY = (imageCount / col) * height;
 			endX = ((imageCount % col) + 1) * width;
-			endY = ((imageCount / row) + 1) * height;
-			
+			endY = ((imageCount / col) + 1) * height;
 		}else if(imageType == MULTI_IMAGE_TYPE){
 //			TODO
 		}
@@ -130,6 +133,18 @@ class HorseImage{
 
 	public int getEndY() {
 		return endY;
+	}
+
+	public Image getImage() {
+		return image;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
 	}
 	
 }
