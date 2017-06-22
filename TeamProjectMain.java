@@ -1,6 +1,7 @@
 
 package kr.koreait.teamProject;
 import java.awt.BorderLayout;
+import java.awt.Choice;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -22,72 +23,87 @@ import java.util.Random;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class TeamProjectMain extends JFrame implements ActionListener{
 	
+	int totalmoney = 0;
+	int chargemoney = 0;
 	JPanel bettingPanel = new JPanel(new GridLayout(11,1));
-	JPanel panel2 = new JPanel();
-	JPanel panel3 = new JPanel();
+	JPanel eastPanelup = new JPanel();
+	JPanel eastPanelDown = new JPanel();
 	JPanel eastPanel = new JPanel(new GridLayout(2, 1));
-	static JPanel horsePanel = new JPanel();
+	static JPanel horsePanel = new JPanel(new GridLayout(11, 1));
 	JPanel centerPanel = new JPanel();
-	JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 100, 0));
-	JButton startButton = new JButton("시작");
+	JPanel buttonPanel = new JPanel(new GridLayout(1, 5, 70, 0));
+	JButton startButton = new JButton("경기 시작");
 	JButton resetButton = new JButton("초기화");
 	JButton bettingButton = new JButton("배팅");
+	JButton chargeButton = new JButton("충전");
+	Choice selectHorse = new Choice();
 	
-	JButton horsewin_1 = new JButton("1번말 : 1.85배"); 
-	JButton horsewin_2 = new JButton("2번말 : 2.00배"); 
-	JButton horsewin_3 = new JButton("3번말 : 1.90배"); 
-	JButton horsewin_4 = new JButton("4번말 : 2.50배"); 
-	JButton horsewin_5 = new JButton("5번말 : 2.10배"); 
-	JButton horsewin_6 = new JButton("6번말 : 1.35배"); 
-	JButton horsewin_7 = new JButton("7번말 : 1.83배"); 
-	JButton horsewin_8 = new JButton("8번말 : 3.90배"); 
-	JButton horsewin_9 = new JButton("9번말 : 5.00배"); 
-	JButton horsewin_10 = new JButton("10번말 : 2.70배"); 
+	JLabel[] horsewin = new JLabel[10];			//말 배당을 띄울 라벨
 	
-	JLabel bettingLabel = new JLabel("1등 말 고르기");
+	JLabel[] horseResult = new JLabel[10];		//말 등수를 띄울 라벨
 	
-	JLabel label = new JLabel("현재 금액 : 50000");
+	JLabel bettingLabel = new JLabel("====================1등 말 고르기====================");
 	
-	JTextField bettingField = new JTextField();
+	Choice selectMoney = new Choice();
+	JLabel nowMoney = new JLabel("현재 금액 : " + totalmoney + "원");
+	
+	
+	JTextField bettingField = new JTextField();		//배팅할 금액을 치는 텍스트필드
 	
 	public TeamProjectMain() {
 		
 		setTitle("경마게임");
-		setBounds(50,50,1300,900);
+		setBounds(30,30,1300,900);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		
+		for(int i = 0; i < 10; i++){	// horsewin라벨을 초기화
+			horsewin[i] = new JLabel(i + "번 마 : ");
+		}
 		
-		horsePanel.setPreferredSize(new Dimension(850, 400));
-		bettingPanel.setPreferredSize(new Dimension(850, 400));
+		for(int i = 0; i < 10; i++){	// horseResult라벨을 초기화
+			horseResult[i] = new JLabel(i + "번 마 : ");
+		}
+		
+		for(int i = 0; i< 10 ; i++){	// selectHorse콤보상자에 말 추가
+			selectHorse.add((i+1) + "번 마        ");
+		}
+		
+		selectMoney.add("         5,000         ");
+		selectMoney.add("         10,000         "); // selectMoney콤보상자에 말 추가
+		selectMoney.add("         30,000         ");
+		selectMoney.add("         50,000         ");
+		selectMoney.add("         100,000         ");
+		selectMoney.add("         200,000         ");
+		selectMoney.add("         300,000         ");
+		selectMoney.add("         500,000         ");
+		
+		
+		
+		horsePanel.setPreferredSize(new Dimension(880, 400));
+		bettingPanel.setPreferredSize(new Dimension(880, 420));
 		eastPanel.setPreferredSize(new Dimension(400, 700));
 		
 		horsePanel.setBackground(Color.GREEN);
 		bettingPanel.setBackground(Color.black);
-		panel2.setBackground(Color.RED);
-		panel3.setBackground(Color.YELLOW);
+		eastPanelup.setBackground(Color.RED);
+		eastPanelDown.setBackground(Color.YELLOW);
 		centerPanel.add(horsePanel);
 		
+		
+		bettingPanel.add(bettingLabel);
 		bettingLabel.setHorizontalAlignment(JLabel.CENTER);
 		bettingLabel.setFont(new Font("궁서체", Font.BOLD, 20));
 		bettingLabel.setForeground(Color.WHITE);
 		
-		bettingPanel.add(bettingLabel);
+		resetBettingRate();
 		
-		bettingPanel.add(horsewin_1);
-		bettingPanel.add(horsewin_2);
-		bettingPanel.add(horsewin_3);
-		bettingPanel.add(horsewin_4);
-		bettingPanel.add(horsewin_5);
-		bettingPanel.add(horsewin_6);
-		bettingPanel.add(horsewin_7);
-		bettingPanel.add(horsewin_8);
-		bettingPanel.add(horsewin_9);
-		bettingPanel.add(horsewin_10);
+		resetHorseResult();
 		
 		
 		
@@ -95,6 +111,7 @@ public class TeamProjectMain extends JFrame implements ActionListener{
 		startButton.addActionListener(this);
 		buttonPanel.add(resetButton);
 		resetButton.addActionListener(this);
+		buttonPanel.add(selectHorse);
 		bettingField.setText("배팅할 금액을 입력해주세요");
 		bettingField.addMouseListener(new MouseAdapter() {
 			
@@ -111,9 +128,16 @@ public class TeamProjectMain extends JFrame implements ActionListener{
 		add(buttonPanel, BorderLayout.SOUTH);
 		centerPanel.add(bettingPanel);
 		add(centerPanel);
-		eastPanel.add(panel2);
-		panel3.add(label);
-		eastPanel.add(panel3);
+		
+		
+		
+		eastPanelDown.add(selectMoney);
+		eastPanelDown.add(chargeButton);
+		chargeButton.addActionListener(this);
+		
+		eastPanel.add(eastPanelup);
+		eastPanelDown.add(nowMoney);
+		eastPanel.add(eastPanelDown);
 		add(eastPanel, BorderLayout.EAST);
 		
 		
@@ -135,38 +159,86 @@ public class TeamProjectMain extends JFrame implements ActionListener{
 		
 		TeamProjectMain frame = new TeamProjectMain();
 		
-//		runningHorse runningHorse = new runningHorse();
-		
-//		movingHorse.setVisible(true);
-		
-		
-		
-		
-//		frame.add(runningHorse);
-//		horsePanel.add(runningHorse);
-//		frame.setVisible(true);
-//		Thread thread = new Thread(runningHorse);
-//		thread.start();
-		
 	}
 	
 	
 	@Override
 	public void actionPerformed(ActionEvent e) {
-		if(e.getActionCommand() == "시작"){
+		if(e.getActionCommand() == "경기 시작"){
 			JFrame frame = new JFrame("sam");
-			runningHorse runningHorse = new runningHorse();
+			runningHorse runningHorse = new runningHorse(this);
 			frame.setBounds(400, 200, 1000, 700);
 			frame.add(runningHorse);
 			Thread thread = new Thread(runningHorse);
 			thread.start();
 			frame.setVisible(true);
 			
-			
 		}else if(e.getActionCommand() == "초기화"){
 			
 		}else if(e.getActionCommand() == "배팅"){
+			if(totalmoney >= Integer.parseInt(bettingField.getText().trim())){
+				totalmoney -= Integer.parseInt(bettingField.getText().trim());
+				String str = "현재금액 : " + totalmoney + "원";
+				nowMoney.setText(str);
+			}else {
+				JOptionPane.showMessageDialog(null, "배팅할 금액이 현재금액을 초과합니다.");
+			}
 			
+			
+		}else if(e.getActionCommand() == "충전"){
+			
+			switch(selectMoney.getSelectedIndex()){
+			case 0:
+				chargemoney = 5000;
+				break;
+			case 1:
+				chargemoney = 10000;
+				break;
+			case 2:
+				chargemoney = 30000;
+				break;
+			case 3:
+				chargemoney = 50000;
+				break;
+			case 4:
+				chargemoney = 100000;
+				break;
+			case 5:
+				chargemoney = 200000;
+				break;
+			case 6:
+				chargemoney = 300000;
+				break;
+			default:
+				chargemoney = 500000;
+			}
+			
+			totalmoney += chargemoney;
+			String str = "현재금액 : " + totalmoney + "원";
+			nowMoney.setText(str);
+			chargemoney = 0;
+			
+		}
+	}
+	public void resetBettingRate(){
+		for(int i=0 ; i<10 ; i++) {
+			int a = new Random().nextInt(4)+1;
+			int b = new Random().nextInt(9);
+			int c = new Random().nextInt(9);
+			horsewin[i].setForeground(Color.WHITE);
+			horsewin[i].setHorizontalAlignment(JLabel.CENTER);
+			horsewin[i].setFont(new Font("궁서체", Font.BOLD, 20));
+			horsewin[i].setText((i+1) + "번말  " + a + "." + b + c +"배");
+			bettingPanel.add(horsewin[i]);
+		}
+	}
+	public void resetHorseResult(){
+		for(int i=0 ; i<10 ; i++) {
+			horseResult[i].setForeground(Color.WHITE);
+			horseResult[i].setHorizontalAlignment(JLabel.CENTER);
+			horseResult[i].setFont(new Font("궁서체", Font.BOLD, 20));
+			horseResult[i].setText((i+1) + "등 말   :" + (runningHorse.rank[i]+1) + "번  마!!!!");
+			horsePanel.add(horseResult[i]);
 		}
 	}
 	
@@ -174,16 +246,22 @@ public class TeamProjectMain extends JFrame implements ActionListener{
 
 class runningHorse extends JPanel implements Runnable{
 	
-	
-	Image[] image = new Image[10];
-	int [] pos_x = new int[10];
+	TeamProjectMain frame;
+	Image[] image = new Image[10];			//말 이미지가 들어가는 배열
+	static int [] pos_x = new int[10];		//말이 들어가는 배열
+	static int [] rank = new int[10];		//등수가 매겨지는 배열
 	int w = 100, h = 70, count = 0, xpos = 50;
-	int rank = 1;
+	static int ranking = 1;
+	int a = 0;
+	int b = 0;
+	int c = 0;
+	
 	
 	public static final int START_POINT = 0; 
 	public static final int FINISH_POINT = 800;
 	
-	public runningHorse() {
+	public runningHorse(TeamProjectMain frame)  {
+		this.frame = frame;
 		String filename = "";
 		for(int i=0 ; i<image.length ; i++){
 			filename = String.format("./src/horse/%02d.png", i);
@@ -234,6 +312,9 @@ class runningHorse extends JPanel implements Runnable{
 	
 	@Override
 	public void run() {
+		for(int i = 0; i < 10; i++){
+			rank[i] = i;
+		}
 		while(true){
 			
 			count = ++count%9;
@@ -248,22 +329,27 @@ class runningHorse extends JPanel implements Runnable{
 				
 			}
 			
-//			for(int i = 0; i < pos_x.length ; i++){
-//				if(pos_x[i] == FINISH_POINT){
-//					System.out.println(i);
-//					break;
-//				}
-//			}
 			
 			
-			if(pos_x[0] >= FINISH_POINT){
-				System.out.println("!~!~");
+//			경주마의 순위를 실시간으로 매긴다.
+			for(int i = 0; i < pos_x.length-1; i++){
+				if(isFinished(pos_x[rank[i]])){			//	이미 결승을 통과한 경주마의 순위는 바뀌지 않는다.
+					continue;
+				}
+				for(int j=i+1; j < pos_x.length; j++){
+					if(pos_x[rank[i]] < pos_x[rank[j]]){
+						int temp = rank[i];						
+						rank[i] = rank[j];
+						rank[j] = temp;
+					}
+				}
 			}
-			
 			
 			if(pos_x[0] == FINISH_POINT && pos_x[1] == FINISH_POINT && pos_x[2] == FINISH_POINT && pos_x[3] == FINISH_POINT && 
 					pos_x[4] == FINISH_POINT && pos_x[5] == FINISH_POINT && pos_x[6] == FINISH_POINT && pos_x[7] == FINISH_POINT && 
 					pos_x[8] == FINISH_POINT && pos_x[9] == FINISH_POINT){
+				frame.resetBettingRate();
+				frame.resetHorseResult();
 				break;
 			}
 			
@@ -273,16 +359,14 @@ class runningHorse extends JPanel implements Runnable{
 		
 	}
 	
-	public boolean isFinished(){
-		if(horse == null){
-			return false;
-		}
-		if(horse. >= FINISH_POINT)
+	public boolean isFinished(int horse){
+		if(horse >= FINISH_POINT)
 			return true;
 		else
 			return false;
 		
 	}
+	
 	
 	
 }
