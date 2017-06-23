@@ -5,6 +5,12 @@ public class User {
 	private String name = "무명씨";
 	private int balance = 1000;
 	
+	public User(){ }
+	public User(String name, int balance) {
+		this.name = name;
+		this.balance = balance;
+	}
+	
 	public String getName() {
 		return name;
 	}
@@ -13,6 +19,10 @@ public class User {
 	}
 	public void setBalance(int balance) {
 		this.balance = balance;
+	}
+	
+	public void addBalance(int val) {
+		balance += val;
 	}
 	
 }
