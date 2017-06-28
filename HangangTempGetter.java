@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.UnknownHostException;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -47,6 +48,8 @@ public class HangangTempGetter {
 			return temp;
 			
 			
+		}catch(UnknownHostException e){
+			System.out.println("인터넷이 연결되어 있지 않습니다.");
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -91,7 +94,8 @@ public class HangangTempGetter {
 //			System.out.println("한강 수온은 : " + temp + "℃");
 			return temp;
 			
-			
+		}catch(UnknownHostException e){
+			System.out.println("인터넷이 연결되어 있지 않습니다.");
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
 		} catch (IOException e) {

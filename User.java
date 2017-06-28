@@ -2,7 +2,7 @@ package racingHorse;
 
 public class User {
 
-	private String name = "ë¬´ëª…ì”¨";
+	private String name = "¹«¸í¾¾";
 	private int balance = 1000;
 	
 	public User(){ }

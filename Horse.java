@@ -1,141 +1,459 @@
-package kr.koreait.moving;
+package racingHorse;
 
-import java.awt.Color;
-import java.awt.Frame;
-import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.util.Random;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
+import javax.swing.ImageIcon;
 
-public class Horse extends JPanel implements Runnable,ActionListener{
+public class Horse implements Cloneable{
+	private int trackNumber;
+	private String name = "";
+	private int position_X;
+	private int position_Y;
+	private HorseImageInfo imageInfo;
+	private RunningPattern runningPattern;
+	private double bettingRate;
+	
+	private static HorseImageInfo[] imageSet = new HorseImageInfo[7];		//	TODO Â÷ÈÄ¿¡ ·£´ı ÀÌ¹ÌÁö¸¦ °®°í¿À±â À§ÇÑ ¹è¿­
+	private static String[] imageNameMapping = new String[7];
+	private static String[] horseNameSet = {"³¯½Úµ¹ÀÌ", "¹ø°³", "ÅÂÇ³", "±è±æÈ¯", "³¯½ß¸¶", "ºÒ²É¸¶", "È÷¾î·ÎÁî¿Àºê´õ½ºÅè", "ÇÃ·¯ÅÍ»şÀÌ",
+											"°©µ¹ÀÌ", "¾î¹ø¿Í¿ì", "»ş¿ìÆ®ÇÏ´Ï", "±×·£µåºñÀü", "±×·¹ÀÌÆ®ºê¸®Áö", "½Ã½ºÅÍ", "½¬ÁîÆÄÇ½·¯",
+											"¼ÖÆ¼À¯", "ÆÄÀÌ¾î·¯Ã÷´í¼­", "Àå±â¿¡ÇÁ", "ºÒ½º¾ÆÀÌ", "´ÚÅÍ·±", "°è¸íÀÇºû", "³ë´øµğ¹Ù",
+											"Ä¿½Ãºê", "´õ¸®¾óÁÖ¾ó", "ºñÀÜÅ°Æ¼", "ÀåÆ¼À¯¾Ë·ç¿¡Æ®", "°­°ø¾ËÆÄ", "º¸À×Ä¥»çÄ¥", "Áöºü±Í",
+											"ÇÁ¸°¼¼½º¹öºí°Ë", "¾Æ¼­½º", "¼ÛÇÏ³ª", "·¹ÀÎº¸¿ì´ë½¬", "¸¶ÀÌÅ©¿ÍÁ¶½ºÅ°", "Á¦ÀÓ½ºP¼³¸®¹İ",
+											"¶óÀÌÆ®´×¸ÆÄı", "¸ÆÄÃ¸®ÄÃÅ²", "ÅÂ±Ç¿Õ°­ÅÂÇ³", "Å¹±¸¿Õ±èÁ¦»§", "¸®ÅÏÀÎ±Û·Î¸®", "ºò½º",
+											"¹Ì½ºÅÍÅ©·Î¿ì", "ÄÉÀÌ¿şÀÌºê", "ÄÉÀÌ½ºÅ¸", "¹Ì¸£¿Â", "°­³²½ºÅ¸ÀÏ", "»ç¶ûÇØ¿ä¿¬¿¹°¡Áß°è",
+											"»ç¶ûÀÌ", "¶ÊÀÌ", "ÇÏ´ÃÀÌ", "´õ¹Ğ¾îºÙ¿©", "°¡ÀÚ°¡ÀÚ", "°¡Àå¸ÕÀú", "°£´ÙÀÌ", "°­ÀÚ¶á´Ù",
+											"±âÀıÃÊÇ³", "³ª°¡½Å´Ù", "´ÙºñÄÑ", "´ë¹ÚÀÌ´Ù", "¹Ù¶ó´Â´ë·Î", "»Ñµí", "Â¥¸´", "ºû³ª¿ä",
+											"»õ·Î¿î³ª", "¼Ò¸®ÃÄ", "¾îÂŞ±¸¸®", "ÀÌ°Íµµ³ÊÇÁÇØº¸½ÃÁö", "1À§¸¦°è½ÂÇÏ´ÂÁßÀÔ´Ï´Ù", "ÀÔ´ÚÃÄ¸»Æ÷ÀÌ"};
+	private static int population = 0;
+	private static int population2 = 0;
 
-
-	Image img ,img2; 			//ë§ì‚¬ì§„ì„ ë„£ì„ ì´ë¯¸ì§€ ë³€ìˆ˜
-	
-	int w= 133, h= 135;		//ë§ 1ë§ˆë¦¬ì˜ í­ê³¼ ë†’ì´
-	int count = 0;		//ì´ë¯¸ì§€ì˜ ì¶œë ¥ ìˆœì„œ ë³€ê²½ì— ì‚¬ìš©í•  ë³€ìˆ˜
-	int xpos =50;		// ì²˜ìŒ ì‹œì‘ìœ„ì¹˜
-	int w1=400,h1=248;
-	
-	static JPanel panel = new JPanel();
-	
-	JButton button = new JButton("Start");
-	JButton button2 = new JButton("Reset");
-	
-	
-	
-	
-	public Horse() {
-		String filename = "C:\\Users\\Administrator\\Desktop\\ê²½ë§ˆí•˜ëŠ”ë²•/132544164CC712F10A178F.jpg";
-		img = Toolkit.getDefaultToolkit().getImage(filename);
-		String filename2 = "C:\\Users\\Administrator\\Desktop\\ê²½ë§ˆí•˜ëŠ”ë²•/ë§.png";
-		img2 = Toolkit.getDefaultToolkit().getImage(filename2);
-		
-//		String[] menu1 = {"ë‹¨ìŠ¹ì‹(1ë“±ë§ì¶”ê¸°)","ë³µìŠ¹ì‹(1,2ë“± ë§ì¶”ê¸° (ìˆœì„œìƒê´€X))","ìŒìŠ¹ì‹(1,2ë“± ë§ì¶”ê¸° (ìˆœì„œìƒê´€O))"
-//				,"ì—°ìŠ¹ì‹(1,2ë“±ì¤‘ í•˜ë‚˜ ë§ì¶”ëŠ”ê±°)","ë³µì—°ìŠ¹ì‹(3ë“±ì•ˆì— 2ë§ˆë¦¬ ë§ì¶”ê¸° ìˆœì„œìƒê´€X)","ì‚¼ë³µìŠ¹ì‹(1,2,3ë“± ë§ë§ì¶”ê¸° ìˆœì„œìƒê´€X)"};
-//		String name1 = (String) JOptionPane.showInputDialog(button1, "ë­˜ë¡œ ê±¸ë˜?", "#", JOptionPane.INFORMATION_MESSAGE,new ImageIcon("")
-//				, menu1,"ë‹¨ìŠ¹ì‹");
-//		
-//		String[] menu = {"1ë²ˆë§ˆ", "2ë²ˆë§ˆ","3ë²ˆë§ˆ","4ë²ˆë§ˆ","5ë²ˆë§ˆ","6ë²ˆë§ˆ"};
-//		String name = (String) JOptionPane.showInputDialog(button1, "ëˆ„êµ¬ ê±¸ë˜?", "#", JOptionPane.INFORMATION_MESSAGE,new ImageIcon("")
-//				, menu,"1ë²ˆë§ˆ");
-//		
-//		String menu2[]={"100ì›","1000ì›","10000ì›","10ë§Œì›"};
-//		String name2 = (String) JOptionPane.showInputDialog(button1, "ì–¼ë§ˆ ê±¸ë˜?", "#", JOptionPane.INFORMATION_MESSAGE,new ImageIcon("")
-//				, menu2,"10000ì›");
-			
-			
-			
+	public Horse(Horse horse){
+		this(horse.trackNumber, horse.name, horse.position_X, horse.position_Y);
 	}
-	
-	public static void main(String[] args) {
-		
-		Horse horse = new Horse();
-		
-		Frame frame = new Frame("ë§ë‹¬ë¦¬ì");
-		frame.setBounds(0,0,1200,800);
-		frame.addWindowListener(new WindowAdapter() {
-
-			@Override
-			public void windowClosing(WindowEvent e) {
-				frame.dispose();
-			}
-			
-		});
-		
-		frame.add(panel);
-		frame.add(horse);
-		
-		frame.setVisible(true);
-	}
-
-
-	@Override
-	public void paint(Graphics g) {
-		
-		g.setColor(Color.white);
-//		g.drawImage(img, 10, 20, this);
-		
-		g.fillRect(0, 0, 800, 800);
-		g.drawImage(img, xpos, h*1-50, w*2-50+xpos, h*2-50 ,  w*(count%12), 0, w*(count%12+1), h,this);
-		g.drawImage(img2, xpos+100, h1*1-50+200, w1*2-50+xpos, h1*2-50 ,  w1*(count%12), 0, w1*(count%12+1), h1,this);
-		
-	}
-
-	@Override
-	public void run() {
-//		ë§ì„ ë‹¬ë¦¬ê²Œ í•˜ëŠ” ìŠ¤ë ˆë“œ
-		while(true){
-//			for(int i = 0; i<4;i++){
-//				count ++;
-//			}
-			try { Thread.sleep(50); } catch (InterruptedException e) {	e.printStackTrace(); }
-			count++;
-			if(count==4){
-				w+=w;
-			}
-
-			xpos++;
-			if(xpos>=720){
-				xpos=-w;
-				
-			}
-			
-			repaint();
-			
-						}
+	public Horse(int trackNumber, String name, int position_X, int position_Y) {
+		this.trackNumber = trackNumber;
+//		TODO
+//		3. Áßº¹ÀÌ¸§ ¹æÁöÇÏ±â
+//		ÇöÀç´Â ¾Æ·¡ÀÇ ÄÚµå·Î ¹è¿­Áß ·£´ıÇÑ °ªÀ» ±×³É ºÒ·¯¿À±â ¶§¹®¿¡ Àç¼ö°¡ ¾øÀ¸¸é °°Àº ÀÌ¸§ÀÇ ¸»ÀÌ »ı±ä´Ù.
+//		ÀÌ¸§ Áßº¹À» ¸·±â À§ÇØ HashMapÀ» ÀÌ¿ëÇÑ´Ù.
+//		ÀÚ¼¼ÇÑ ³»¿ëÀº 5¿ù 26ÀÏÀÚ ¼ö¾÷³»¿ëÀ» Âü°íÇÑ´Ù.
 		
 		
-	}
+//		this.name = (name.equals("") ? horseNameSet[new Random().nextInt(horseNameSet.length)] : name);
+		this.name = (name.equals("") ? horseNameSet[population++ % horseNameSet.length] : name);	//Çöµµ
+		this.position_X = position_X;
+		this.position_Y = position_Y;
 		
-	
-	
-	
-	
-	@Override
-	public void actionPerformed(ActionEvent e) {
-		if(e.getActionCommand().equals("Start")){
-			Thread thread = new Thread();
-			thread.start();
-			
-			
+//		TODO
+//		2. ¹è´ç·ü Ãß°¡
+//		¹è´ç·üÀº ¸»¸¶´Ù ´Ù¸¥ ¹è´ç·üÀ» °®µµ·Ï ¼¼ÆÃÇÑ´Ù.
+		
+		
+//		TODO
+//		1. ÀÌ¹ÌÁö Ãß°¡
+//		ÀÌ¹ÌÁö¸¦ ¾Æ·¡¿Í °°ÀÌ Ãß°¡ÇÏ¸é µË´Ï´Ù.
+		
+//		imageInfo = imageSet[new Random().nextInt(2)];		//	¸»ÀÌ Á¤ÇØÁú È®·ü °¢°¡ 1/2
+		if(new Random().nextInt(10) < 1){
+			int randomImage = population2 % imageSet.length;
+			imageInfo = imageSet[randomImage];
+			this.name = imageNameMapping[randomImage];
+			population2++;
+		}else{
+			imageInfo = new HorseImageInfo("./src/basicHorse.png", HorseImageInfo.SPRITE_TYPE, 3, 5, 1);
 		}
+		runningPattern = new RunningPattern(this);
 		
+//		¹è´ç·ü µî±ŞÀ¸·Î °íÁ¤ 
+		String rank = runningPattern.getRank();
+		if(rank.equals("D") || rank.equals("F")){
+			bettingRate = 10;
+			
+		}else if(rank.equals("C-")){
+			
+			bettingRate = 5.5;
+			
+		}else if(rank.equals("C")){
+			
+			bettingRate = 5.2;
+		}else if(rank.equals("C+")){
+			
+			bettingRate = 4.7;
+		}else if(rank.equals("B-")){
+			
+			bettingRate = 4.0;
+		}else if(rank.equals("B")){
+			bettingRate = 3.8;
+			
+		}else if(rank.equals("B+")){
+			bettingRate = 3.5;
+			
+		}else if(rank.equals("A-")){
+			bettingRate = 2.8;
+			
+		}else if(rank.equals("A")){
+			bettingRate = 2.5;
+			
+		}else if(rank.equals("A+")){
+			bettingRate = 2.2;
+			
+		}else if(rank.equals("S")){
+			bettingRate = 1.9;
+			
+		}else if(rank.equals("S+")){
+			
+			bettingRate = 1.6;
+		}else if(rank.equals("S++")){
+			bettingRate = 1.2;
+		}
+	}
+
+	public int move(){
+		position_X += runningPattern.run();
+		return position_X;
+	}
+	public int move(int pos) {
+		position_X += pos;
+		return position_X;
+	}
+
+	public int moveTo(int pos) {
+		position_X = pos;
+		return position_X;
+	}
+
+	public int getPosition_X() {
+		return position_X;
+	}
+
+	public void setPosition_X(int position_X) {
+		this.position_X = position_X;
+	}
+
+	public int getPosition_Y() {
+		return position_Y;
+	}
+
+	public void setPosition_Y(int position_Y) {
+		this.position_Y = position_Y;
+	}
+
+	public String getName() {
+		return name;
+	}
+	
+	public void setName(String name){
+		this.name = name;
+	}
+
+	public HorseImageInfo getImageInfo() {
+		return imageInfo;
+	}
+	public int getTrackNumber() {
+		return trackNumber;
+	}
+	public RunningPattern getRunningPattern() {
+		return runningPattern;
+	}
+	public double getBettingRate() {
+		return bettingRate;
+	}
+	public void setBettingRate(double bettingRate) {
+		this.bettingRate = bettingRate;
+	}
+	
+//	---------------------------------------------- Çöµµ
+	public static void suffle() {
+		//¸»ÀÌ¹ÌÁö Ãß°¡ÇØ³ù½À´Ï´Ù.
+		imageSet[0] = new HorseImageInfo("./src/basicHorse.png", HorseImageInfo.SPRITE_TYPE, 3, 5, 1);
+		imageSet[1] = new HorseImageInfo("./src/childRunner.png", HorseImageInfo.SPRITE_TYPE, 1, 8, 1);			
+		imageSet[2] = new HorseImageInfo("./src/rock-running-3.png", HorseImageInfo.SPRITE_TYPE, 1, 3, 1);
+		imageSet[3] = new HorseImageInfo("./src/ninja.png", HorseImageInfo.SPRITE_TYPE, 2, 5, 1);
+		imageSet[4] = new HorseImageInfo("./src/pegasus.png", HorseImageInfo.SPRITE_TYPE, 3, 4, 1);
+		imageSet[5] = new HorseImageInfo("./src/person.png", HorseImageInfo.SPRITE_TYPE, 2, 6, 1);
+		imageSet[6] = new HorseImageInfo("./src/soniccd.png", HorseImageInfo.SPRITE_TYPE, 3, 4, 1);
+		
+		imageNameMapping[0] = "¸»";
+		imageNameMapping[1] = "½ºÄİÇÊ±×¸²";
+		imageNameMapping[2] = "·Ï¸Ç";
+		imageNameMapping[3] = "´ÑÀÚ";
+		imageNameMapping[4] = "Æä°¡¼ö½º";
+		imageNameMapping[5] = "»ç¶÷";
+		imageNameMapping[6] = "¼Ò´Ğ";
+		
+		
+		Random random = new Random();
+		for(int i=0; i<100000; i++){
+			int r = random.nextInt(horseNameSet.length);
+			int r2 = random.nextInt(imageSet.length-1) + 1;
+			String temp= horseNameSet[0];
+			horseNameSet[0]=horseNameSet[r];
+			horseNameSet[r]=temp;
+			
+			HorseImageInfo temp2 = imageSet[1];
+			imageSet[1] = imageSet[r2];
+			imageSet[r2] = temp2;
+			
+			String temp3 =  imageNameMapping[1];
+			imageNameMapping[1] = imageNameMapping[r2];
+			imageNameMapping[r2] = temp3;
+		}
+	}
+//	-----------------------------------------------------
+	protected Horse clone() throws CloneNotSupportedException {
+		Horse horse = (Horse) super.clone();
+		horse.trackNumber = this.trackNumber;
+		horse.name = this.name;
+		horse.position_X = this.position_X;
+		horse.position_Y = this.position_Y;
+		horse.imageInfo = (HorseImageInfo)this.imageInfo.clone();
+		horse.runningPattern = (RunningPattern)this.runningPattern.clone();
+		horse.bettingRate = this.bettingRate;
+		return horse;
+	}
+
+	
+
+}
+
+class HorseImageInfo{
+//	¸»ÀÇ ÀÌ¹ÌÁö°¡ ¿©·¯°³ÀÏ °æ¿ì¸¦ °í·ÁÇÏ¿© °´Ã¼È­ ÇÏ¿© ¾î¶² ÀÌ¹ÌÁöµç Å¸ÀÔ¸¸ ¾Ë¸é ¼öÁ¤ÇÒ ¼ö ÀÖµµ·Ï ÇÑ´Ù.
+	public static final int MULTI_IMAGE_TYPE = 0;		//	¿©·¯°³ÀÇ ÀÌ¹ÌÁö¸¦ »ç¿ëÇÏ¿© ¸Å¹ø ´Ù¸¥ ÀÌ¸§ÀÇ ÀÌ¹ÌÁö ÆÄÀÏÀ» »ç¿ëÇÒ °æ¿ì
+	public static final int SPRITE_TYPE = 1;			//	ÇÑ°³ÀÇ ½ºÇÁ¶óÀÌÆ® ÀÌ¹ÌÁö¸¦ »ç¿ëÇÏ¿© ±×¸²ÁÂÇ¥¸¸ ¹Ù²ğ °æ¿ì
+	
+	private String fileName;				//	ÆÄÀÏ ¸í
+	private Image image;
+	private int imageType;					//	MULTI_IMAGE_TYPE(0) ¶Ç´Â SPRITE_TYPE(1)
+	private int imageNumber;				//	MULTI_IMAGE_TYPEÀÎ °æ¿ì ÀÌ¹ÌÁöÀÇ Àå¼ö¸¦ Àû´Â´Ù.
+	private int originalWidth;				//	¿øº» ÆÄÀÏÀÇ °¡·Î Å©±â
+	private int originalHeight;				//	¿øº» ÆÄÀÏÀÇ ¼¼·Î Å©±â
+	private int width;						//	Àß¶ó¼­ ºÒ·¯¿Ã ÀÌ¹ÌÁöÀÇ °¡·Î Å©±â
+	private int height;						//	Àß¶ó¼­ ºÒ·¯¿Ã ÀÌ¹ÌÁöÀÇ ¼¼·Î Å©±â
+	private int row;						//	½ºÇÁ¶óÀÌÆ® ÀÌ¹ÌÁö °¡·Î ÁÙ ¼ö
+	private int col;						//	½ºÇÁ¶óÀÌÆ® ÀÌ¹ÌÁö ¼¼·Î ÁÙ ¼ö
+	private int imageCount = 0;				//	¸î¹øÂÅ ÀÌ¹ÌÁö¸¦ ºÒ·¯¿Ã °ÍÀÎÁö Ä«¿îÆ®
+	private int startX;
+	private int startY;
+	private int endX;
+	private int endY;
+	
+	public HorseImageInfo(String fileName, int imageType, int row, int col, int imageNumber) {
+		this.fileName = fileName;
+		this.imageType = imageType;
+		this.row = row;
+		this.col = col;
+		this.imageNumber = imageNumber;
+		Image img = new ImageIcon(fileName).getImage();			// °¡·Î¼¼·Î Å©±â ÃøÁ¤À» À§ÇØ »ç¿ë -> °¡·Î¼¼·Î°¡ 0ÀÌ¸é Fail
+		image =  Toolkit.getDefaultToolkit().getImage(fileName);
+		this.originalWidth = img.getWidth(null);
+		this.originalHeight = img.getHeight(null);
+		width = originalWidth / col;					//	Ãâ·ÂÇÒ ÀÌ¹ÌÁöÀÇ °¡·Î Å©±â = ÀüÃ¼ °¡·Î / ¼¼·ÎÁÙ ¼ö  
+		height = originalHeight / row;					//	Ãâ·ÂÇÒ ¹ÌÀÌÁöÀÇ ¼¼·Î Å©±â = ÀüÃ¼ ¼¼·Î / °¡·ÎÁÙ ¼ö
+		resetImage();									//	ÀÌ¹ÌÁö ÃÊ±âÈ­ -> ²À ¾ÈÇØµµ ‰Î
+//		imageCount = new Random().nextInt(row * col);	//	ÀÌ¹ÌÁö ·£´ı¼±ÅÃ -> ²À ¾ÈÇØµµ ‰Î
+	}
+	
+	public HorseImageInfo nextImage(){
+		if(imageType == SPRITE_TYPE){
+			imageCount = (imageCount+1) % (col * row);
+//			½ºÇÁ¶óÀÌÆ® Å¸ÀÔÀÏ °æ¿ì fileNameÀº º¯ÇÏÁö ¾Ê°í ½ÃÀÛÁÂÇ¥¿Í ³¡ÁÂÇ¥¸¸ ¹Ù²ï´Ù.
+			startX = (imageCount % col) * width;
+			startY = (imageCount / col) * height;
+			endX = ((imageCount % col) + 1) * width;
+			endY = ((imageCount / col) + 1) * height;
+		}else if(imageType == MULTI_IMAGE_TYPE){
+			imageCount = (imageCount+1) % imageNumber;
+			Toolkit.getDefaultToolkit().getImage(String.format(fileName, imageCount));
+			startX = 0;
+			startY = 0;
+			endX = width;
+			endY = height;
+		}
+		return this;
+	}
+	
+	public void resetImage(){
+//		imageCount¸¦ ÃÊ±âÈ­ ÇÏ¿© Ã³À½ »çÁøÀ¸·Î µÇµ¹¸°´Ù.
+//		»ç½Ç ÇÊ¼öÀûÀÎ ÀÛ¾÷Àº ¾Æ´Ï³ª ÀÌ¹ÌÁö¿¡ µû¶ó¼­ Ã¹ ÀÌ¹ÌÁö°¡ ÇÊ¿äÇÑ °æ¿ì¸¦ °í·ÁÇÏ¿© ÇÔ¼öÁ¦ÀÛ
+		imageCount = 0;
+		startX = 0;
+		startY = 0;
+		endX = width;
+		endY = height;
+	}
+
+	public int getStartX() {
+		return startX;
+	}
+
+	public int getStartY() {
+		return startY;
+	}
+
+	public int getEndX() {
+		return endX;
+	}
+
+	public int getEndY() {
+		return endY;
+	}
+
+	public Image getImage() {
+		return image;
+	}
+
+	public int getWidth() {
+		return width;
+	}
+
+	public int getHeight() {
+		return height;
+	}
+	
+	public int getTotal(){
+		return row * col;
+	}
+
+	@Override
+	public String toString() {
+		return fileName;
+	}
+
+	protected Object clone() throws CloneNotSupportedException {
+		HorseImageInfo clone = new HorseImageInfo(fileName, imageType, row, col, imageNumber);
+		clone.image = this.image;
+		return clone;
+		
+	}
+
+}
+
+class RunningPattern{
+	private String patternName = "";
+	private int max = 35;
+	private int min = 13;
+	private int r = 22;
+	private double avgSpeed;
+	private Horse horse = null;
+	private String rank = "D";
+	private int lastSpurt = 0;
+	
+	public RunningPattern(Horse horse){
+		this(new Random().nextInt(17) + 5);
+		this.horse = horse;
+	}
+	public RunningPattern(int min){
+		this.max = 46 + (new Random().nextInt(3)) - min;
+		this.min = min;
+		this.r = max - min;
+		this.lastSpurt = new Random().nextInt(3);
+		simulate();
+		setRank();
+		setName();
+	}
+	
+
+	public RunningPattern(String patternName, int max, int min, int r, double avgSpeed, Horse horse, String rank,
+			int lastSpurt) {
+		super();
+		this.patternName = patternName;
+		this.max = max;
+		this.min = min;
+		this.r = r;
+		this.avgSpeed = avgSpeed;
+		this.horse = horse;
+		this.rank = rank;
+		this.lastSpurt = lastSpurt;
+	}
+	public int run(){
+		double current_pos = (horse == null ? 0 : (double)horse.getPosition_X());
+		int result = (new Random().nextInt(r)+min);
+		if(lastSpurt > 0 && current_pos >= (double)RacingPanel.TRACK_LENGTH * 0.8){
+			result += new Random().nextInt(lastSpurt);
+		}
+		return result;
+	}
+	
+	public void simulate(){
+		double total = 0;
+		for(int i = 0; i < 1000; i++){
+			total += (double)run();
+		}
+		total /= 1000;
+		this.avgSpeed = total;
+	}
+	
+	public void setRank(){
+		if(avgSpeed > 25){
+			rank = "S++";
+		}else if(avgSpeed > 24.5){
+			rank = "S+";
+		}else if(avgSpeed > 24.2){
+			rank = "S";
+		}else if(avgSpeed > 24.0){
+			rank = "A+";
+		}else if(avgSpeed > 23.8){
+			rank = "A";
+		}else if(avgSpeed > 23.6){
+			rank = "A-";
+		}else if(avgSpeed > 23.2){
+			rank = "B+";
+		}else if(avgSpeed > 23.0){
+			rank = "B";
+		}else if(avgSpeed > 22.8){
+			rank = "B-";
+		}else if(avgSpeed > 22.6){
+			rank = "C+";
+		}else if(avgSpeed > 22.3){
+			rank = "C";
+		}else if(avgSpeed > 22.2){
+			rank = "C-";
+		}else if(avgSpeed > 24.0){
+			rank = "D";
+		}else{
+			rank = "F";
+		}
+	}
+	public void setName(){
+		String str = "";
+		if(lastSpurt > 1){
+			str += "µŞ½É ÀÖ°í";
+		}
+		if(max > 38){
+			str += "Æø¹ßÀûÀÎ ";
+		}else if(min > 15){
+			str += "¾ÈÁ¤ÀûÀÎ ";
+		}else{
+			str += "±ÕÇü ÀâÈù";
+		}
+		str += "½ºÅ¸ÀÏ";
+		patternName = str;
+	}
+	
+	public double getAvgSpeed(){
+		return this.avgSpeed;
+	}
+	public String getPatternName() {
+		return patternName;
+	}
+	public int getMax() {
+		return max;
+	}
+	public int getMin() {
+		return min;
+	}
+	public String getRank() {
+		return rank;
+	}
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		RunningPattern clone = new RunningPattern(patternName, max, min, r, avgSpeed, horse, rank, lastSpurt);
+		return clone;
 	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
+
 }

@@ -3,7 +3,6 @@ package racingHorse;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.GridLayout;
@@ -11,11 +10,17 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.text.DecimalFormat;
 import java.util.Random;
 
 import javax.swing.JButton;
@@ -27,54 +32,69 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 
 public class MainFrame extends JFrame {
-	//	ë©”ì¸ í”„ë ˆì„ì— ëª¨ë“  íŒ¨ë„ì— ê´€í•œ ì •ë³´ì™€ mainí•¨ìˆ˜ë¥¼ ê°€ì§€ê³  ìˆë‹¤.
+	//	¸ŞÀÎ ÇÁ·¹ÀÓ¿¡ ¸ğµç ÆĞ³Î¿¡ °üÇÑ Á¤º¸¿Í mainÇÔ¼ö¸¦ °¡Áö°í ÀÖ´Ù.
 	
 	public static final int WIDTH = 1500;
 	public static final int LANE_SIZE = 60;
 	
-//	ë§ì˜ ìˆ˜ë¥¼ challengerNumberë¡œ ìˆ˜ì •í•  ìˆ˜ ìˆë‹¤.
-	private int challengerNumber = 6; 										//	ì°¸ê°€ì ìˆ˜
-	private RacingPanel racingPanel = new RacingPanel(challengerNumber, this);	//	ê²½ì£¼íŠ¸ë™ íŒ¨ë„
+//	¸»ÀÇ ¼ö¸¦ TOTAL_HORSE_NUMBER·Î ¼öÁ¤ÇÒ ¼ö ÀÖ´Ù.
+	private int TOTAL_HORSE_NUMBER = 6; 										//	Âü°¡ÀÚ ¼ö
+	private RacingPanel racingPanel = new RacingPanel(TOTAL_HORSE_NUMBER, this);	//	°æÁÖÆ®·¢ ÆĞ³Î
+	private CheerUp cheerup = new CheerUp(this);
 	private JPanel upPanel = new JPanel();									//	menu + ranking
-	private JPanel rankingPanel = new JPanel();								//	ìˆœìœ„ í‘œì‹œ
-	private MenuPanel menuPanel = new MenuPanel(racingPanel);				//	ë©”ë‰´ íŒ¨ë„
-	private JPanel southPanel = new JPanel();						//		
-	private static JLabel rankingLabel = new JLabel("ìˆœìœ„");					//	ìˆœìœ„ í‘œì‹œ 
+	private RankingPanel rankingPanel = new RankingPanel(TOTAL_HORSE_NUMBER, this);	//	¼øÀ§ Ç¥½Ã 
 	
+	private MenuPanel menuPanel = new MenuPanel(racingPanel, this);				// ¸Ş´º ÆĞ³Î
+	private JPanel southPanel = new JPanel();								// ¸Ç¹Ø ÆĞ³Î
+	
+	private AdvertisePanel advertisepanel = new AdvertisePanel(this);			// ±¤°íÆĞ³Î
+	
+	private LogPanel logpanel = new LogPanel(this);
+
 	private static User user = new User("LocalHost", 10000);
-	
+
+
 	public MainFrame() {
-		setTitle("ê²½ë§ˆ ê²Œì„");
-		setBounds(200, 100, WIDTH, 500 + LANE_SIZE*challengerNumber + RacingPanel.TRACK_OFFSET*2);
+		setTitle("°æ¸¶ °ÔÀÓ");
+		setBounds(200, 50, WIDTH, 500 + LANE_SIZE*TOTAL_HORSE_NUMBER + RacingPanel.TRACK_OFFSET*2);
 		setLayout(new BorderLayout());
 
-//		ìœ„ìª½ì—” ìˆœìœ„ í‘œì‹œ íŒ¨ë„ê³¼ ë°°íŒ…ì„ í•  ìˆ˜ ìˆëŠ” ë©”ë‰´ íŒ¨ë„ë¡œ êµ¬ì„±ë˜ì–´ìˆë‹¤.
+//		À§ÂÊ¿£ ¼øÀ§ Ç¥½Ã ÆĞ³Î°ú ¹èÆÃÀ» ÇÒ ¼ö ÀÖ´Â ¸Ş´º ÆĞ³Î·Î ±¸¼ºµÇ¾îÀÖ´Ù.
 		upPanel.setLayout(new BorderLayout());
 		upPanel.add(rankingPanel, BorderLayout.WEST);
 		upPanel.add(menuPanel, BorderLayout.CENTER);
-
-//		rankingPanelì€ ìˆœìœ„ë¥¼ í‘œì‹œí•œë‹¤.
-		rankingPanel.setPreferredSize(new Dimension(600, 300));
-		rankingPanel.add(rankingLabel);
-//		ìˆœìœ„ë¥¼ í…ìŠ¤íŠ¸ë¡œ í‘œì‹œí•˜ê¸° ìœ„í•´ rankingLabelì„ ì‚¬ìš©
-		rankingLabel.setText("ìˆœìœ„");
-		rankingLabel.setFont(new Font("Dialog", Font.BOLD, 28));
-
+		
 		southPanel.setPreferredSize(new Dimension(WIDTH, 150));
+		southPanel.setLayout(new GridLayout(1,3 ));
+		southPanel.add(logpanel);
+		southPanel.add(cheerup);
+		southPanel.add(advertisepanel);
+		
+		
 //		TODO
-//		ë¡œê·¸ ì¶”ê°€í•˜ê¸°, ê´‘ê³  ì¶”ê°€í•˜ê¸°
-//		southPanel ì•ˆì— ë¡œê·¸ë¥¼ ë„£ì„ íŒ¨ë„ê³¼ ê´‘ê³ ë¥¼ ë„£ì„ íŒ¨ë„ì„ ê°ê°€ add í•˜ê³ 
-//		ê°ê°ì„ ì„¤ì •í•´ì£¼ì–´ì•¼ í•œë‹¤.
-//		ë¡œê·¸íŒ¨ë„ê³¼ ê´‘ê³ íŒ¨ë„ì„ ë³„ë„ì˜ classë¡œ ì„ ì–¸í•´ì£¼ëŠ” ê²ƒì´ ì½”ë“œ ì§œê¸°ì— í¸í•  ìˆ˜ ìˆë‹¤.
-//		ì˜ˆì‹œ : 
+//		·Î±× Ãß°¡ÇÏ±â, ±¤°í Ãß°¡ÇÏ±â
+//		(¼¼È£) ¶óº§ Ãß°¡ 
+
+		
+//		southPanel.add(logpanel,BorderLayout.WEST);
+		
+
+//		southPanel ¾È¿¡ ·Î±×¸¦ ³ÖÀ» ÆĞ³Î°ú ±¤°í¸¦ ³ÖÀ» ÆĞ³ÎÀ» °¢°¡ add ÇÏ°í
+//		°¢°¢À» ¼³Á¤ÇØÁÖ¾î¾ß ÇÑ´Ù.
+//		·Î±×ÆĞ³Î°ú ±¤°íÆĞ³ÎÀ» º°µµÀÇ class·Î ¼±¾ğÇØÁÖ´Â °ÍÀÌ ÄÚµå Â¥±â¿¡ ÆíÇÒ ¼ö ÀÖ´Ù.
+//		¿¹½Ã : 
 //		southPanel.add(logPanel);
 //		southPanel.add(advertisePanel);
 //		southPanel.setLayout(new GridLayout(2,1));
 //		...
 		
+//		---------------------Çöµµ Ãß°¡------------------------
+//		cheerup.setLayout(new BorderLayout());
 		add(upPanel, BorderLayout.NORTH);
 		add(racingPanel, BorderLayout.CENTER);
 		add(southPanel, BorderLayout.SOUTH);
+		
+//		------------------------------------------------------
 		
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
@@ -82,28 +102,16 @@ public class MainFrame extends JFrame {
 	
 	public static void main(String[] args) {
 //		TODO
-//		6. íƒ€ì´í‹€ í™”ë©´ ì¶”ê°€
-//		íƒ€ì´í‹€ í™”ë©´ì˜ JFrameí™”ë©´ì—ì„œ ë²„íŠ¼ì„ ëˆ„ë¥´ë©´ ActionPerformedë¡œ 
-//		MainFrame frameì„ ìƒì„±í•˜ì—¬ í˜¸ì¶œí•˜ë©´ ëœë‹¤.
-		MainFrame frame = new MainFrame();
+//		6. Å¸ÀÌÆ² È­¸é Ãß°¡
+//		Å¸ÀÌÆ² È­¸éÀÇ JFrameÈ­¸é¿¡¼­ ¹öÆ°À» ´©¸£¸é ActionPerformed·Î 
+//		MainFrame frameÀ» »ı¼ºÇÏ¿© È£ÃâÇÏ¸é µÈ´Ù.
+		Horse.suffle();
+//		MainFrame frame = new MainFrame();
+		TitleFrame title = new TitleFrame();
 	}
-
-	public static void printStatus(int rank[]){
-//		TODO
-//		4. ìˆœìœ„í‘œ ê¹”ë”í•˜ê²Œ
-//		í˜„ì¬ëŠ” ê·¸ëƒ¥ JLabel í•˜ë‚˜ë§Œ ìˆì–´ì„œ ê¹”ë”í•˜ì§€ ëª»í•˜ë‹¤.
-//		rankingPanel ì•ˆì— Layout ì„¤ì •ì„ í•˜ê³  JLabelì„ ê²½ì£¼ë§ˆìˆ˜ë§Œí¼ ë„£ì–´ì„œ ìˆœìœ„ë¥¼ ë“±ë¡í•  ìˆ˜ ìˆë„ë¡ ìˆ˜ì •í•œë‹¤.
-		
-//		ìˆœìœ„ë¥¼ ì‹¤ì‹œê°„ìœ¼ë¡œ í‘œì‹œí•˜ê¸° ìœ„í•´ racingPanelì—ì„œ í˜¸ì¶œ í•  ìˆ˜ ìˆë„ë¡ staticìœ¼ë¡œ êµ¬í˜„í•˜ì˜€ë‹¤.
-//		ì›ë˜ëŠ” JLabel í•˜ë‚˜ì— ì—¬ëŸ¬ì¤„ì„ ì‚½ì…í•  ìˆ˜ ì—†ì§€ë§Œ ê¼¼ìˆ˜ë¡œ HTMLì„ ì‚¬ìš©í•˜ì—¬ ì—¬ëŸ¬ì¤„ì„ ë„£ì„ ìˆ˜ ìˆë‹¤.
-//		<br>ë§ˆë‹¤ ì¤„ë°”ê¿ˆì´ ë˜ë©° ì•„ë˜ì™€ ê°™ì€ ì–‘ì‹ìœ¼ë¡œ ì‘ì„±í•  ìˆ˜ ìˆë‹¤.
-//		<HTML> ... <br> ... <br> ... </HTML>
-		String str = "<html>ìˆœìœ„<br>";
-		for(int i = 0; i < rank.length; i++){
-			str += (i+1) + "ìœ„ : " + (rank[i]+1) + "ë²ˆ íŠ¸ë™ "+ RacingPanel.getHorses()[rank[i]].getName()+"<br>";
-		}
-		str += "</html>";
-		rankingLabel.setText(str);
+	
+	public void printRanking(int rank[]){
+		rankingPanel.printRanking(rank);
 	}
 
 	public static User getUser() {
@@ -118,34 +126,55 @@ public class MainFrame extends JFrame {
 		menuPanel.racingResult();
 		
 	}
+	
+	public int getSelectedHorse(){
+		return menuPanel.getSelectedHorse();
+	}
+	
+	public LogPanel getLogPanel(){
+		return logpanel;
+	}
+	
+	public RacingPanel getRacingPanel(){
+		return racingPanel;
+	}
+	
+	public void setRunningState(int state){
+		cheerup.setRunningState(state);
+	}
+	
+	public void setCheeringName(String name){
+		cheerup.setHorseName(name);
+	}
 }
 
 class RacingPanel extends JPanel implements Runnable {
-//	ê²½ì£¼ë§ˆê°€ ë‹¬ë¦¬ëŠ” ê²ƒì„ í‘œí˜„í•˜ê¸° ìœ„í•´ JPanelì˜ paint()í•¨ìˆ˜ì™€ Runnableì˜ run() í•¨ìˆ˜ë¥¼ override í•˜ì—¬ ì‚¬ìš©í•œë‹¤. 
-	public static final int START_POINT = 10; 			// ì¶œë°œì§€ì 
+//	°æÁÖ¸¶°¡ ´Ş¸®´Â °ÍÀ» Ç¥ÇöÇÏ±â À§ÇØ JPanelÀÇ paint()ÇÔ¼ö¿Í RunnableÀÇ run() ÇÔ¼ö¸¦ override ÇÏ¿© »ç¿ëÇÑ´Ù. 
+	public static final int START_POINT = 10; 			// Ãâ¹ßÁöÁ¡
 	public static final int TRACK_LENGTH = 4500;
 	public static final int TRACK_OFFSET = 80;
-	public static final int FINISH_POINT = TRACK_LENGTH - 120; 		// ë„ì°©ì§€ì 
+	public static final int FINISH_POINT = TRACK_LENGTH - 120; 		// µµÂøÁöÁ¡
 	
 	private MainFrame mainFrame;
 	
-	private static Horse[] horses;				//	ê²½ì£¼ë§ˆì˜ ì •ë³´ë¥¼ ê°€ì§€ê³  ìˆëŠ” Horseê°ì²´ ë°°ì—´
-	private static int[] rank;					//	ìˆœìœ„ë¥¼ ë§¤ê¸°ê¸° ìœ„í•œ ì •ìˆ˜ë°°ì—´
-	private int trackMove = 0;					//	íŠ¸ë™ì´ ì–¼ë§ˆë‚˜ ì›€ì§ì˜€ëŠ”ì§€ ë‚˜íƒ€ë‚´ëŠ” ì •ìˆ˜	
-	private boolean horseInfoClickable = true;	//	ê²½ê¸°ë„ì¤‘ ë§ì˜ ì •ë³´ë¥¼ í™•ì¸í•  ìˆ˜ ì—†ë„ë¡ ì„¤ì •
+	private static Horse[] horses;				//	°æÁÖ¸¶ÀÇ Á¤º¸¸¦ °¡Áö°í ÀÖ´Â Horse°´Ã¼ ¹è¿­
+	private static int[] rank;					//	¼øÀ§¸¦ ¸Å±â±â À§ÇÑ Á¤¼ö¹è¿­
+	private int trackMove = 0;					//	Æ®·¢ÀÌ ¾ó¸¶³ª ¿òÁ÷¿´´ÂÁö ³ªÅ¸³»´Â Á¤¼ö	
+	private boolean horseInfoClickable = true;	//	°æ±âµµÁß ¸»ÀÇ Á¤º¸¸¦ È®ÀÎÇÒ ¼ö ¾øµµ·Ï ¼³Á¤
 	
-	private String countDown = "";										//	ê²Œì„ ì‹œì‘ì‹œ ë‚˜ì˜¤ëŠ” ì¹´ìš´íŠ¸ë‹¤ìš´ ë©”ì„¸ì§€
-	private Font countDownFont = new Font("Dialog", Font.BOLD, 30);		//	ì¹´ìš´íŠ¸ë‹¤ìš´ ë©”ì„¸ì§€ì˜  ê¸€ì”¨ì²´
+	private String countDown = "";										//	°ÔÀÓ ½ÃÀÛ½Ã ³ª¿À´Â Ä«¿îÆ®´Ù¿î ¸Ş¼¼Áö
+	private Font countDownFont = new Font("Dialog", Font.BOLD, 30);		//	Ä«¿îÆ®´Ù¿î ¸Ş¼¼ÁöÀÇ  ±Û¾¾Ã¼
+	private boolean flag= true;											// Çöµµ
 	
-	public RacingPanel(int challengerNumber, MainFrame mainFrame) {
+	public RacingPanel(int TOTAL_HORSE_NUMBER, MainFrame mainFrame) {
 		this.mainFrame = mainFrame;
-		horses = new Horse[challengerNumber];
-		rank = new int[challengerNumber];
-		for(int i = 0; i < challengerNumber; i++){
+		horses = new Horse[TOTAL_HORSE_NUMBER];
+		rank = new int[TOTAL_HORSE_NUMBER];
+		for(int i = 0; i < TOTAL_HORSE_NUMBER; i++){
 			horses[i] = new Horse(i, "", START_POINT, i *MainFrame.LANE_SIZE);
 		}
-//		ê²½ì£¼ë§ˆì˜ ìˆ˜ë§Œí¼ í¬ê¸°ë¥¼ ëŠ˜ë¦°ë‹¤.
-		setPreferredSize(new Dimension(MainFrame.WIDTH, MainFrame.LANE_SIZE* challengerNumber + TRACK_OFFSET));
+//		°æÁÖ¸¶ÀÇ ¼ö¸¸Å­ Å©±â¸¦ ´Ã¸°´Ù.
+		setPreferredSize(new Dimension(MainFrame.WIDTH, MainFrame.LANE_SIZE* TOTAL_HORSE_NUMBER + TRACK_OFFSET));
 		
 		addMouseListener(new MouseAdapter() {
 			
@@ -153,36 +182,45 @@ class RacingPanel extends JPanel implements Runnable {
 			@Override
 			public void mouseClicked(MouseEvent me) {
 //				TODO
-//				3. ì¤‘ë³µì°½ ì—´ë¦¼ ë°©ì§€
-//				ì°½ì´ ì—´ë¦° ìƒíƒœì¸ì§€ í™•ì¸í•  ìˆ˜ ìˆëŠ” boolean flag ë³€ìˆ˜ë°°ì—´ì„ ì‚¬ìš©í•˜ì—¬
-//				í•œë²ˆ ì—´ë¦° ë²ˆí˜¸ì˜ ì°½ì€ ì—´ë¦¬ì§€ ì•Šë„ë¡ ìˆ˜ì •í•œë‹¤.
+//				3. Áßº¹Ã¢ ¿­¸² ¹æÁö
+//				Ã¢ÀÌ ¿­¸° »óÅÂÀÎÁö È®ÀÎÇÒ ¼ö ÀÖ´Â boolean flag º¯¼ö¹è¿­À» »ç¿ëÇÏ¿©
+//				ÇÑ¹ø ¿­¸° ¹øÈ£ÀÇ Ã¢Àº ¿­¸®Áö ¾Êµµ·Ï ¼öÁ¤ÇÑ´Ù.
 				
-				if(horseInfoClickable){
-					int x = me.getX();
-					int y = me.getY();
-					for(int i =0; i < horses.length ; i++){
-						int horseSize= (int)((double)MainFrame.LANE_SIZE / (double)horses[i].getImageInfo().getHeight() * (double)horses[i].getImageInfo().getWidth());
-						if( x >= horses[i].getPosition_X() &&
-								x <= horses[i].getPosition_X() + horseSize &&
-								y >= horses[i].getPosition_Y() + TRACK_OFFSET&&
-								y <= horses[i].getPosition_Y() + MainFrame.LANE_SIZE + TRACK_OFFSET){
-							JFrame horseInfoFrame = new JFrame();
-							horseInfoFrame.setTitle(horses[i].getName());
-							horseInfoFrame.setBounds(400 + (10* i), 200, HorseInfoPanel.WIDTH, HorseInfoPanel.HEIGHT);
-							horseInfoFrame.setVisible(true);
-							HorseInfoPanel horseInfoPanel = new HorseInfoPanel(horses[i]);
-							horseInfoFrame.add(horseInfoPanel);
-							Thread thread = new Thread(horseInfoPanel);
-							thread.start();
-							horseInfoFrame.addWindowListener(new WindowAdapter() {
-								@Override
-								public void windowClosing(WindowEvent e) {
-									thread.stop();
-								}
-							});
+				try {
+					if(horseInfoClickable){
+						int x = me.getX();
+						int y = me.getY();
+						for(int i =0; i < horses.length ; i++){
+							int horseSize= (int)((double)MainFrame.LANE_SIZE / (double)horses[i].getImageInfo().getHeight() * (double)horses[i].getImageInfo().getWidth());
+							if( x >= horses[i].getPosition_X() &&
+									x <= horses[i].getPosition_X() + horseSize &&
+									y >= horses[i].getPosition_Y() + TRACK_OFFSET&&
+									y <= horses[i].getPosition_Y() + MainFrame.LANE_SIZE + TRACK_OFFSET){
+								JFrame horseInfoFrame = new JFrame();
+								horseInfoFrame.setTitle(horses[i].getName());
+								horseInfoFrame.setBounds(400 + (10* i), 200, HorseInfoPanel.WIDTH, HorseInfoPanel.HEIGHT);
+								horseInfoFrame.setVisible(flag);
+								HorseInfoPanel horseInfoPanel;
+								horseInfoPanel = new HorseInfoPanel(horses[i].clone());
+								
+								horseInfoFrame.add(horseInfoPanel);
+								Thread thread = new Thread(horseInfoPanel);
+								thread.start();
+								flag = false;
+								horseInfoFrame.addWindowListener(new WindowAdapter() {
+									@Override
+									public void windowClosing(WindowEvent e) {
+										thread.stop();
+										flag = true;
+									}
+								});
+							}
+							
 						}
-						
-					}
+					}	// if end
+				} catch (CloneNotSupportedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
 				}
 			}
 		});
@@ -192,37 +230,41 @@ class RacingPanel extends JPanel implements Runnable {
 	@Override
 	public void paintComponent(Graphics g) {
 		
-//		ë°°ê²½ ê·¸ë¦¬ê¸°
-//		íŠ¸ë™ ìš¸íƒ€ë¦¬
-		g.setColor(new Color(150, 70, 0));				//	ê°ˆìƒ‰ í™
-		g.fillRect(0, 0, TRACK_LENGTH, TRACK_OFFSET);	//	íŠ¸ë™ ìœ„ í™ê¸¸
-		g.fillRect(0, TRACK_OFFSET + MainFrame.LANE_SIZE * horses.length, TRACK_LENGTH * 2, TRACK_OFFSET*4);	//	íŠ¸ë™ ì•„ë˜ í™ê¸¸
+//		¹è°æ ±×¸®±â
+//		Æ®·¢ ¿ïÅ¸¸®
+		g.setColor(new Color(150, 70, 0));				//	°¥»ö Èë
+		g.fillRect(0, 0, TRACK_LENGTH, TRACK_OFFSET);	//	Æ®·¢ À§ Èë±æ
+		g.fillRect(0, TRACK_OFFSET + MainFrame.LANE_SIZE * horses.length, TRACK_LENGTH * 2, TRACK_OFFSET*4);	//	Æ®·¢ ¾Æ·¡ Èë±æ
 		g.setColor(Color.WHITE);
 		g.fillRect(-trackMove, 20, TRACK_LENGTH * 2, 6);
 		for(int i = 0; i < TRACK_LENGTH / 180; i++){
 			g.fillRect(100 + i * 180 -trackMove, 20, 6, TRACK_OFFSET - 20);
 		}
 		
-//		g.setColor(new Color(150, 70, 0));				//	ê°ˆìƒ‰ í™
-//		g.fillRect(0, TRACK_OFFSET + MainFrame.LANE_SIZE * horses.length, TRACK_LENGTH, TRACK_OFFSET);	//	íŠ¸ë™ ë°– í™ê¸¸
+//		g.setColor(new Color(150, 70, 0));				//	°¥»ö Èë
+//		g.fillRect(0, TRACK_OFFSET + MainFrame.LANE_SIZE * horses.length, TRACK_LENGTH, TRACK_OFFSET);	//	Æ®·¢ ¹Û Èë±æ
 		
 		for(int i = 0; i < horses.length; i++){
-//			íŠ¸ë™ì˜ ì”ë””
-			g.setColor(new Color((i % 2 == 0 ? 183 : 0), (i % 2 == 0 ? 255 : 204), (i % 2 == 0 ? 190 : 19)));
+//			Æ®·¢ÀÇ ÀÜµğ
+			if(mainFrame.getSelectedHorse() == i){
+				g.setColor(Color.PINK);
+			}else{
+				g.setColor(new Color((i % 2 == 0 ? 183 : 0), (i % 2 == 0 ? 255 : 204), (i % 2 == 0 ? 190 : 19)));
+			}
 			g.fillRect(0, i *MainFrame.LANE_SIZE + TRACK_OFFSET, TRACK_LENGTH, MainFrame.LANE_SIZE);
-//			ì”ë””ìœ„ì— íŠ¸ë™ë²ˆí˜¸ì™€ ì´ë¦„
+//			ÀÜµğÀ§¿¡ Æ®·¢¹øÈ£¿Í ÀÌ¸§
 			g.setColor(Color.GRAY);
 			g.setFont(new Font("Dialog", Font.BOLD, 22));
 			g.drawString("[" + (i+1)+ "] " + horses[i].getName(), 100 - trackMove, i *MainFrame.LANE_SIZE + TRACK_OFFSET + 33);
 		}
 		
-//		1000pixelë§ˆë‹¤ m í‘œì‹œ
+//		1000pixel¸¶´Ù m Ç¥½Ã
 		for(int i = 1; i <= TRACK_LENGTH / 1000; i++){
 			g.setColor(Color.WHITE);
 			g.drawLine(i * 1000 - trackMove, TRACK_OFFSET, i * 1000 - trackMove, TRACK_OFFSET + MainFrame.LANE_SIZE * horses.length);
 			g.drawString(i + "0m", i * 1000 - trackMove - 13, TRACK_OFFSET + MainFrame.LANE_SIZE * horses.length + 30);
 		}
-//		ê²°ìŠ¹ì„ 
+//		°á½Â¼±
 		for(int i = 0; i < horses.length; i++){
 			g.setColor(Color.BLACK);
 			g.fillRect(FINISH_POINT -trackMove,  i * MainFrame.LANE_SIZE + TRACK_OFFSET ,  MainFrame.LANE_SIZE /2, MainFrame.LANE_SIZE /2);
@@ -236,35 +278,35 @@ class RacingPanel extends JPanel implements Runnable {
 //		g.fillRect(0, horses.length *MainFrame.LANE_SIZE + TRACK_OFFSET, MainFrame.WIDTH, horses.length*MainFrame.LANE_SIZE);
 		
 	
-//		ë§ ê·¸ë¦¬ê¸°
+//		¸» ±×¸®±â
 		for(int i = 0; i < horses.length; i++){
 			int horseSize= (int)((double)MainFrame.LANE_SIZE / (double)horses[i].getImageInfo().getHeight() * (double)horses[i].getImageInfo().getWidth());
-//			ë§ ê°ê°ì˜ ìœ„ì¹˜ë¥¼ ë°›ì•„ì™€ì„œ ê·¸ë¦°ë‹¤.
+//			¸» °¢°¢ÀÇ À§Ä¡¸¦ ¹Ş¾Æ¿Í¼­ ±×¸°´Ù.
 			try{
-//				drawImage(img,  dx1,  dx2,  dy2, sx1, sy1, sx2, sy2, observer) : ì›ë³¸ì´ë¯¸ì§€ë¥¼ ë³€í˜•ì‹œì¼œ ìœˆë„ìš°ì— í‘œì‹œí•¨
+//				drawImage(img,  dx1,  dx2,  dy2, sx1, sy1, sx2, sy2, observer) : ¿øº»ÀÌ¹ÌÁö¸¦ º¯Çü½ÃÄÑ À©µµ¿ì¿¡ Ç¥½ÃÇÔ
 				g.drawImage(horses[i].getImageInfo().getImage(),						// Image
-						horses[i].getPosition_X() - trackMove,							// ìœˆë„ìš°ì— ì´ë¯¸ì§€ê°€ í‘œì‹œë  ì‹œì‘ X ì¢Œí‘œ
-						horses[i].getPosition_Y() + TRACK_OFFSET,						// ìœˆë„ìš°ì— ì´ë¯¸ì§€ê°€ í‘œì‹œë  ì‹œì‘ Y ì¢Œí‘œ
-						horses[i].getPosition_X() + horseSize -trackMove,				// ìœˆë„ìš°ì— ì´ë¯¸ì§€ê°€ í‘œì‹œë  ë X ì¢Œí‘œ = ì‹œì‘ì¢Œí‘œ + ë§ ê°€ë¡œ í¬ê¸°
-						horses[i].getPosition_Y() + MainFrame.LANE_SIZE + TRACK_OFFSET,	// ìœˆë„ìš°ì— ì´ë¯¸ì§€ê°€ í‘œì‹œë  ë Y ì¢Œí‘œ = ì‹œì‘ì¢Œí‘œ + ë§ ì„¸ë¡œ í¬ê¸°
-						horses[i].getImageInfo().getStartX(),							// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ì‹œì‘ X ì¢Œí‘œ
-						horses[i].getImageInfo().getStartY(),							// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ì‹œì‘ Y ì¢Œí‘œ
-						horses[i].getImageInfo().getEndX(),								// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ë X ì¢Œí‘œ
-						horses[i].getImageInfo().getEndY(),								// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ë Y ì¢Œí‘œ
+						horses[i].getPosition_X() - trackMove,							// À©µµ¿ì¿¡ ÀÌ¹ÌÁö°¡ Ç¥½ÃµÉ ½ÃÀÛ X ÁÂÇ¥
+						horses[i].getPosition_Y() + TRACK_OFFSET,						// À©µµ¿ì¿¡ ÀÌ¹ÌÁö°¡ Ç¥½ÃµÉ ½ÃÀÛ Y ÁÂÇ¥
+						horses[i].getPosition_X() + horseSize -trackMove,				// À©µµ¿ì¿¡ ÀÌ¹ÌÁö°¡ Ç¥½ÃµÉ ³¡ X ÁÂÇ¥ = ½ÃÀÛÁÂÇ¥ + ¸» °¡·Î Å©±â
+						horses[i].getPosition_Y() + MainFrame.LANE_SIZE + TRACK_OFFSET,	// À©µµ¿ì¿¡ ÀÌ¹ÌÁö°¡ Ç¥½ÃµÉ ³¡ Y ÁÂÇ¥ = ½ÃÀÛÁÂÇ¥ + ¸» ¼¼·Î Å©±â
+						horses[i].getImageInfo().getStartX(),							// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ½ÃÀÛ X ÁÂÇ¥
+						horses[i].getImageInfo().getStartY(),							// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ½ÃÀÛ Y ÁÂÇ¥
+						horses[i].getImageInfo().getEndX(),								// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ³¡ X ÁÂÇ¥
+						horses[i].getImageInfo().getEndY(),								// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ³¡ Y ÁÂÇ¥
 						this);
 				
 				
 			}catch(NullPointerException e){
 //				e.printStackTrace();
-				System.err.println("ì´ë¯¸ì§€ íŒŒì¼ì„ ë¶ˆëŸ¬ì˜¤ëŠ”ë° ì‹¤íŒ¨í•˜ì˜€ìŠµë‹ˆë‹¤.");
+				System.err.println("ÀÌ¹ÌÁö ÆÄÀÏÀ» ºÒ·¯¿À´Âµ¥ ½ÇÆĞÇÏ¿´½À´Ï´Ù.");
 			}
 		}
 
 		
-//		ì¹´ìš´íŠ¸ë‹¤ìš´
-//		g.setColor(Color.GRAY);							//	TODO : ê¸€ì ê·¸ë¦¼ì
-//		g.setFont(new Font("Dialog", Font.BOLD, 35));	//	ê¸€ì ê·¸ë¦¼ì
-//		g.drawString("3", MainFrame.WIDTH/2 - 50, 31);	//	ê¸€ì ê·¸ë¦¼ì
+//		Ä«¿îÆ®´Ù¿î
+//		g.setColor(Color.GRAY);							//	TODO : ±ÛÀÚ ±×¸²ÀÚ
+//		g.setFont(new Font("Dialog", Font.BOLD, 35));	//	±ÛÀÚ ±×¸²ÀÚ
+//		g.drawString("3", MainFrame.WIDTH/2 - 50, 31);	//	±ÛÀÚ ±×¸²ÀÚ
 		g.setColor(Color.BLACK);
 		g.setFont(countDownFont);
 		g.drawString(countDown, MainFrame.WIDTH/2 - 180, 80);
@@ -272,11 +314,11 @@ class RacingPanel extends JPanel implements Runnable {
 
 	@Override
 	public void run() {
-//		ì‹œí•©ë„ì¤‘ ë§ì˜ ì •ë³´ë¥¼ ì—´ ìˆ˜ ì—†ë„ë¡ ìˆ˜ì •
+//		½ÃÇÕµµÁß ¸»ÀÇ Á¤º¸¸¦ ¿­ ¼ö ¾øµµ·Ï ¼öÁ¤
 		horseInfoClickable = false;
-//		ë§ì´ ë„ˆë¬´ ë¹ ë¥´ë©´ ë³´ì •ì¹˜ë¥¼ ì ì  ë”í•œë‹¤.
+//		¸»ÀÌ ³Ê¹« ºü¸£¸é º¸Á¤Ä¡¸¦ Á¡Á¡ ´õÇÑ´Ù.
 		int tooFastOffset = 1;
-//		ì¹´ìš´íŠ¸ë‹¤ìš´
+//		Ä«¿îÆ®´Ù¿î
 		String[] countDownStr = {"READY", "GET SET!" };
 		for(int i = countDownStr.length-1; i >= 0; i--){
 			for(int fontSize= 100; fontSize > 50; fontSize--){
@@ -294,27 +336,36 @@ class RacingPanel extends JPanel implements Runnable {
 		
 		long startTime = System.currentTimeMillis();
 		while (true) {
-//			CountDown ë©”ì„¸ì§€ ë§ˆì§€ë§‰ "GO!" ì—†ì• ê¸° ìœ„í•´ 1ì´ˆê°€ ì§€ë‚¬ëŠ”ì§€ í™•ì¸í•œë‹¤.
+//			CountDown ¸Ş¼¼Áö ¸¶Áö¸· "GO!" ¾ø¾Ö±â À§ÇØ 1ÃÊ°¡ Áö³µ´ÂÁö È®ÀÎÇÑ´Ù.
 			if( System.currentTimeMillis() - startTime > 800){
 				countDown = "";
 			}
+			
+//			ÀÀ¿øÆĞ³ÎÀÇ ÀÀ¿ø¹®±¸¸¦ ¹Ù²ãÁØ´Ù.
+			mainFrame.setRunningState(CheerUp.RUNNING);
 			if (isAllHorseFinished()) {
-//				ëª¨ë“  ë§ì´ ê²°ìŠ¹ì„ ì— ë„ì°©í•˜ë©´ MenuPanelì—ì„œ ê²°ê³¼ë¥¼ ì •ë¦¬í•œë‹¤.
+//				¸ğµç ¸»ÀÌ °á½Â¼±¿¡ µµÂøÇÏ¸é MenuPanel¿¡¼­ °á°ú¸¦ Á¤¸®ÇÑ´Ù.
 				countDownFont = new Font("Dialog", Font.BOLD, 80);
 				countDown = "Finished!";
 				repaint();
+				if(mainFrame.getSelectedHorse() == rank[0]){
+					mainFrame.setRunningState(CheerUp.WIN);
+				}else{
+					mainFrame.setRunningState(CheerUp.LOSE);
+				}
 				try { Thread.sleep(500); } catch (InterruptedException e) { e.printStackTrace();}
-				resetHorsePosition();
 //				MenuPanel.racingResult();
 				mainFrame.racingResult();
+				resetHorsePosition();
 //				MainFrame.printStatus(rank);
 				mainFrame.refreshMenuPanel();
 				countDown = "";
 				repaint();
 				horseInfoClickable = true;
+				mainFrame.setRunningState(CheerUp.WAITING);
 				return;
 			}
-//			ì•„ì§ ë„ì°©í•˜ì§€ ì•Šì€ ë§ì´ ìˆìœ¼ë©´ ê° ë§ì˜ Xì¢Œí‘œì— ê°’ì„ ë”í•´ ë§ì„ ì´ë™ì‹œí‚¨ë‹¤.
+//			¾ÆÁ÷ µµÂøÇÏÁö ¾ÊÀº ¸»ÀÌ ÀÖÀ¸¸é °¢ ¸»ÀÇ XÁÂÇ¥¿¡ °ªÀ» ´õÇØ ¸»À» ÀÌµ¿½ÃÅ²´Ù.
 			for(int i = 0; i < horses.length ; i++){
 				if(horses[i].getPosition_X() < FINISH_POINT){
 //					horses[i].move(new Random().nextInt(22)+13);
@@ -325,21 +376,21 @@ class RacingPanel extends JPanel implements Runnable {
 				}
 			}
 			
-//			íŠ¸ë™ì´ ì‚´ì‚´ ì›€ì§ì´ë„ë¡ ëª¨ë“  ë§ì˜ Xì¢Œí‘œì—ì„œ íŠ¸ë™ì´ ì›€ì§ì¸ ë§Œí¼ ì¢Œí‘œë¥¼ ëº€ë‹¤. 					
-//			ë§ˆì§€ë§‰ ê²°ìŠ¹ì„ ì´ ë³´ì´ë©´ ë”ì´ìƒ íŠ¸ë™ì€ ì›€ì§ì´ì§€ ì•ŠëŠ”ë‹¤.
+//			Æ®·¢ÀÌ »ì»ì ¿òÁ÷ÀÌµµ·Ï ¸ğµç ¸»ÀÇ XÁÂÇ¥¿¡¼­ Æ®·¢ÀÌ ¿òÁ÷ÀÎ ¸¸Å­ ÁÂÇ¥¸¦ »«´Ù. 					
+//			¸¶Áö¸· °á½Â¼±ÀÌ º¸ÀÌ¸é ´õÀÌ»ó Æ®·¢Àº ¿òÁ÷ÀÌÁö ¾Ê´Â´Ù.
 			if( trackMove < TRACK_LENGTH - MainFrame.WIDTH){
 				trackMove += 18;
-//				1ë“±ì´ í™”ë©´ì˜ 65%ë¥¼ ë„˜ì–´ê°€ë©´ íŠ¸ë™ì´ ì†ë„ë¥¼ ë” ë†’í˜€ ë”°ë¼ì¡ëŠ”ë‹¤.
+//				1µîÀÌ È­¸éÀÇ 65%¸¦ ³Ñ¾î°¡¸é Æ®·¢ÀÌ ¼Óµµ¸¦ ´õ ³ôÇô µû¶óÀâ´Â´Ù.
 				if(horses[rank[0]].getPosition_X() - trackMove > MainFrame.WIDTH / 100 * 65){
 					trackMove += tooFastOffset++;
-//					System.out.println("ë³´ì • ì‹œì‘");
+//					System.out.println("º¸Á¤ ½ÃÀÛ");
 				}
 			}
 
-			//	ê²½ì£¼ë§ˆì˜ ìˆœìœ„ë¥¼ ì‹¤ì‹œê°„ìœ¼ë¡œ ë§¤ê¸´ë‹¤.
+			//	°æÁÖ¸¶ÀÇ ¼øÀ§¸¦ ½Ç½Ã°£À¸·Î ¸Å±ä´Ù.
 			for(int i = 0; i < horses.length-1; i++){
 				int max = i;
-				if(isFinished(horses[rank[i]])){			//	ì´ë¯¸ ê²°ìŠ¹ì„ í†µê³¼í•œ ê²½ì£¼ë§ˆì˜ ìˆœìœ„ëŠ” ë°”ë€Œì§€ ì•ŠëŠ”ë‹¤.
+				if(isFinished(horses[rank[i]])){			//	ÀÌ¹Ì °á½ÂÀ» Åë°úÇÑ °æÁÖ¸¶ÀÇ ¼øÀ§´Â ¹Ù²îÁö ¾Ê´Â´Ù.
 					continue;
 				}
 				for(int j=i+1; j < horses.length; j++){
@@ -350,14 +401,19 @@ class RacingPanel extends JPanel implements Runnable {
 					}
 				}
 			}
-			MainFrame.printStatus(rank);
+			
+//			³» ¸»ÀÌ 1µîÀÌ¸é ÄªÂùÀÇ ¹®±¸·Î ¹Ù²ãÁØ´Ù.
+			if(rank[0] == mainFrame.getSelectedHorse()){
+				mainFrame.setRunningState(CheerUp.WINNING);
+			}
+			mainFrame.printRanking(rank);
 			repaint();
 			try { Thread.sleep(35); } catch (InterruptedException e) { e.printStackTrace();}
 		}
 	}
 
 	private boolean isAllHorseFinished() {
-//		ëª¨ë“  ë§ì´ ê²°ìŠ¹ì„ ì— ë„ì°©í•˜ë©´ ê²Œì„ì„ ëë‚´ì•¼ í•œë‹¤.
+//		¸ğµç ¸»ÀÌ °á½Â¼±¿¡ µµÂøÇÏ¸é °ÔÀÓÀ» ³¡³»¾ß ÇÑ´Ù.
 		for(int i = 0; i < horses.length ; i++){
 			if(horses[i].getPosition_X() < FINISH_POINT){
 				return false;
@@ -367,7 +423,7 @@ class RacingPanel extends JPanel implements Runnable {
 	}
 	
 	public void resetHorsePosition(){
-//			ìœ„ì¹˜ ì´ˆê¸°í™”
+//			À§Ä¡ ÃÊ±âÈ­
 		for(int i = 0; i < horses.length ; i++){
 //			horses[i].setPosition_X(START_POINT);
 			int ypos = horses[i].getPosition_Y();
@@ -387,135 +443,261 @@ class RacingPanel extends JPanel implements Runnable {
 		
 	}
 
-	public static Horse[] getHorses() {
+	public Horse[] getHorses() {
 		return horses;
 	}
 
-	public static int getStartPoint() {
-		return START_POINT;
-	}
-
-	public static int getFinishPoint() {
-		return FINISH_POINT;
-	}
-
-	public static int[] getRank() {
+	public int[] getRank() {
 		return rank;
 	}
 
 }
 
 class MenuPanel extends JPanel implements ActionListener{
+	private MainFrame mainFrame;
 	private RacingPanel racingPanel;
 	private String[] horseNames;
-	private static JComboBox horseList1;
-	private static JComboBox horseList2;
-	private static JButton selectButton = new JButton("ì„ íƒ ì™„ë£Œ");
-	private static JTextField bettingValField = new JTextField();
-	private static JLabel amountLabel = new JLabel();
-	
+	private JComboBox horseList1;
+	private JComboBox horseList2;
+	private JButton selectButton = new JButton("¼±ÅÃ ¿Ï·á ");
+	private JTextField bettingValField = new JTextField();
+	private JLabel amountLabel = new JLabel();
+	private JButton addButton = new JButton("    ÃæÀü     ");				// ÃæÀü ¹öÆ°
+	private JComboBox moneychoice;							// ÃæÀü ±İ¾×¼±ÅÃ ÄŞº¸»óÀÚ
+	private int chargemoney;
 //	TODO
-//	5. ê¸ˆì•¡ì¶©ì „
-//	ê¸ˆì•¡ ì¶©ì „ì„ ìœ„í•œ ë²„íŠ¼ì„ ë§Œë“¤ê³  ê·¸ ë²„íŠ¼ì˜ ActionPerformed ì‹œì—
-//	staticìœ¼ë¡œ ì„ ì–¸ë˜ì–´ìˆëŠ” MainFrame.getUserë¡œ() Userë¥¼ ë¶€ë¥´ê³ 
-//	addBalance() í•¨ìˆ˜ë¡œ ê¸ˆì•¡ì„ ì¶©ì „í•´ì¤€ë‹¤.
-//	ì˜ˆì‹œ )  MainFrame.getUser().addBalance(Integer.parseInt(chargeTestField.getTest().trim()));
-//	String ì—ì„œ Intë¡œ parsingì´ ì¼ì–´ë‚˜ë¯€ë¡œ ì˜ˆì™¸ì²˜ë¦¬ë¡œ ë°˜ë“œì‹œ ë¬¸ìì—´ì„ ê±¸ëŸ¬ë‚´ì•¼ í•œë‹¤.
+//	5. ±İ¾×ÃæÀü
+//	±İ¾× ÃæÀüÀ» À§ÇÑ ¹öÆ°À» ¸¸µé°í ±× ¹öÆ°ÀÇ ActionPerformed ½Ã¿¡
+//	staticÀ¸·Î ¼±¾ğµÇ¾îÀÖ´Â MainFrame.getUser·Î() User¸¦ ºÎ¸£°í
+//	addBalance() ÇÔ¼ö·Î ±İ¾×À» ÃæÀüÇØÁØ´Ù.
+//	¿¹½Ã )  MainFrame.getUser().addBalance(Integer.parseInt(chargeTestField.getTest().trim()));
+//	¿¹½Ã )  MainFrame.getUser().addBalance(chargeMoney);
+//	setText(MainFrame.getUser().getBalance() + " ¿ø");
+//	String ¿¡¼­ Int·Î parsingÀÌ ÀÏ¾î³ª¹Ç·Î ¿¹¿ÜÃ³¸®·Î ¹İµå½Ã ¹®ÀÚ¿­À» °É·¯³»¾ß ÇÑ´Ù.
 	
-	public MenuPanel(RacingPanel racingPanel){
+	public MenuPanel(RacingPanel racingPanel, MainFrame mainFrame){
 //		TODO
-//		4. ë©”ë‰´ íŒ¨ë„ ê¹”ë”í•˜ê²Œ ì •ë¦¬
-//		ë ˆì´ì•„ì›ƒ ì„¤ì •ì„ ì˜ í•´ì„œ ë°°ì¹˜ë¥¼ ê¹”ë”í•˜ê²Œ í•˜ë„ë¡ í•œë‹¤.
-//		í˜„ì¬ëŠ” ë ˆì´ì•„ì›ƒ ì„¤ì •ì´ ì•ˆë˜ì–´ ìˆì–´ì„œ ê¸°ë³¸ê°’ì¸ FlowLayoutì´ë‹¤.
+//		4. ¸Ş´º ÆĞ³Î ±ò²ûÇÏ°Ô Á¤¸®
+//		·¹ÀÌ¾Æ¿ô ¼³Á¤À» Àß ÇØ¼­ ¹èÄ¡¸¦ ±ò²ûÇÏ°Ô ÇÏµµ·Ï ÇÑ´Ù.
+//		ÇöÀç´Â ·¹ÀÌ¾Æ¿ô ¼³Á¤ÀÌ ¾ÈµÇ¾î ÀÖ¾î¼­ ±âº»°ªÀÎ FlowLayoutÀÌ´Ù.
+		this.mainFrame = mainFrame;
 		this.racingPanel = racingPanel;
 		horseNames = new String[racingPanel.getHorses().length + 1];
-		horseNames[0] = "ì„ íƒì•ˆí•¨";
+		horseNames[0] = "¼±ÅÃ¾ÈÇÔ";
+		
 		for(int i = 0; i < racingPanel.getHorses().length; i++){
-			horseNames[i+1] = racingPanel.getHorses()[i].getName();
+			String name = (i+1) + " : " + racingPanel.getHorses()[i].getName();
+			String bettingRate = " (¹è´ç·ü : " +new DecimalFormat("#.##").format(racingPanel.getHorses()[i].getBettingRate()) + ")";  
+			horseNames[i+1] =  name + bettingRate;
 		}
+		String[] moneyList = {"ÃæÀüÇÒ ±İ¾×","1000","5000","10000","50000","100000","500000"}; 
 		
 		bettingValField.setPreferredSize(new Dimension(200, 30));
 		horseList1 = new JComboBox(horseNames);
 		horseList2 = new JComboBox(horseNames);
+//		2À§ ¹èÆÃÀº ´õÀÌ»ó »ç¿ëÇÏÁö ¾Ê´Â´Ù.
+		horseList2.setVisible(false);
+		moneychoice = new JComboBox(moneyList);
 		
-		setPreferredSize(new Dimension(600,  300));
-//		setLayout(new GridLayout(2,3));
-		setLayout(new FlowLayout());
+//		setPreferredSize(new Dimension(600, 300));
+		setLayout(new GridLayout(3,1));
+//		setLayout(new FlowLayout());
 		
-		add(new JLabel());
-		add(horseList1);
-		add(horseList2);
-		amountLabel.setText("ë‚¨ì€ ê¸ˆì•¡ : "+ MainFrame.getUser().getBalance() + "ì›");
-		add(amountLabel);
-		add(new JLabel("ë°°íŒ…ì•¡ : "));
-		add(bettingValField);
+//		JPanel moneymenupanel = new JPanel(new GridLayout(1,3));
+//		±İ¾×ÄŞº¸»óÀÚ,ÃæÀü ¹öÆ°, ³²Àº±İ¾× ¶óº§
+		JPanel moneymenupanel = new JPanel();
+//		moneymenupanel.setPreferredSize(new Dimension(600, 100));
+		moneymenupanel.add(moneychoice);
+		moneymenupanel.add(addButton);
+		addButton.setSize(new Dimension(200, 100));
+		moneymenupanel.add(amountLabel);
+		amountLabel.setSize(200, 100);
+		amountLabel.setText("³²Àº ±İ¾× : "+ MainFrame.getUser().getBalance() + "¿ø");
+//		
+//		JPanel horsemenupanel = new JPanel(new GridLayout(1,2));
+//		¸» ¼±ÅÃ ÄŞº¸»óÀÚ 1,2
+		JPanel horsemenupanel = new JPanel();
+//		horsemenupanel.setPreferredSize(new Dimension(500, 100)); 
+		horsemenupanel.add(horseList1);
+		horsemenupanel.add(horseList2);
 		
-		add(new JLabel(" "));
-		add(selectButton);
+		
+//		JPanel bettingpanel = new JPanel(new GridLayout(1, 4));
+//		º£ÆÃ ¶óº§, ±İ¾× ÀÔ·Â ÅØ½ºÆ®ÇÊµå, ¼±ÅÃ¿Ï·á ¹öÆ°
+		JPanel bettingpanel = new JPanel();
+		bettingpanel.add(new JLabel("¹èÆÃ¾× : "));
+		bettingpanel.add(bettingValField);
+		bettingpanel.add(new JLabel(" "));
+		bettingpanel.add(selectButton);
+		
+//		menupanel¿¡ °¢ ÆĞ³ÎÀ» Ãß°¡		
+		add(moneymenupanel);
+		add(horsemenupanel);
+		add(bettingpanel);
 		
 		selectButton.addActionListener(this);
 		bettingValField.addActionListener(this);
+		
+		addButton.addActionListener(new ActionListener() {
+//			Ã³À½ ±İ¾×Àº 0¿øÀ¸·Î ½ÃÀÛÇÏ°í ÃæÀü±İ¾×¼±ÅÃÇÏ°í ÃæÀü¹öÆ° ´©¸¦¶§¸¶´Ù ´õÇØÁö°Ô ÇØ³ù½À´Ï´Ù.
+//			±×¸®°í ±İ¾×ÀÌ ¼±ÅÃ¾ÈµÇ¾úÀ»¶§´Â ÃæÀüÇÒ ±İ¾× ¼±ÅÃÇÏ¶ó°í ¸Ş½ÃÁö ¶ç¿öÁİ´Ï´Ù.
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				switch(moneychoice.getSelectedIndex()){
+				case 0:
+					JOptionPane.showMessageDialog(moneychoice, "ÃæÀüÇÒ ±İ¾×À» ¼±ÅÃÇØÁÖ¼¼¿ä!!!!");
+					break;
+				case 1:
+					chargemoney = 1000;
+					break;
+				case 2:
+					chargemoney = 5000;
+					break;
+				case 3:
+					chargemoney = 10000;
+					break;
+				case 4:
+					chargemoney = 50000;
+					break;
+				case 5:
+					chargemoney = 100000;
+					break;
+				case 6:
+					chargemoney = 500000;
+					break;
+				}
+				MainFrame.getUser().addBalance(chargemoney);
+				amountLabel.setText("³²Àº ±İ¾× : "+ MainFrame.getUser().getBalance() + "¿ø");
+				chargemoney = 0;
+			}
+		});
+		
+		horseList1.addItemListener(new ItemListener() {
+			
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				Horse[] horses = mainFrame.getRacingPanel().getHorses();
+				mainFrame.getRacingPanel().repaint();
+				mainFrame.setRunningState(CheerUp.READY);
+				try{
+					mainFrame.setCheeringName(horses[horseList1.getSelectedIndex() - 1].getName());
+				}catch(ArrayIndexOutOfBoundsException e1){
+//					e1.printStackTrace();
+				}
+				try{
+					if(!bettingValField.getText().trim().equals("")){
+						mainFrame.getLogPanel().setBetResult((int)(horses[horseList1.getSelectedIndex() - 1].getBettingRate() * Integer.parseInt(bettingValField.getText().trim())));
+					}
+				}catch(NumberFormatException e1){
+//					e1.printStackTrace();
+				}
+			}
+		});
+		
+		bettingValField.addFocusListener(new FocusListener() {
+			Horse[] horses = mainFrame.getRacingPanel().getHorses();
+			
+			@Override
+			public void focusLost(FocusEvent e) {
+				Horse[] horses = mainFrame.getRacingPanel().getHorses();
+				mainFrame.getRacingPanel().repaint();
+				mainFrame.setRunningState(CheerUp.READY);
+				try{
+					mainFrame.setCheeringName(horses[horseList1.getSelectedIndex() - 1].getName());
+				}catch(ArrayIndexOutOfBoundsException e1){
+//					e1.printStackTrace();
+				}
+				try{
+					if(!bettingValField.getText().trim().equals("")){
+						mainFrame.getLogPanel().setBetResult((int)(horses[horseList1.getSelectedIndex() - 1].getBettingRate() * Integer.parseInt(bettingValField.getText().trim())));
+					}
+				}catch(NumberFormatException e1){
+//					e1.printStackTrace();
+				}catch(ArrayIndexOutOfBoundsException e1){
+					mainFrame.setRunningState(CheerUp.WAITING);
+				}
+			}
+			
+			@Override
+			public void focusGained(FocusEvent e) {
+				mainFrame.getLogPanel().setBetResult(0);
+			}
+		});
+		
+		
+	}
+	
+	public int getSelectedHorse() {
+		return (horseList1.getSelectedIndex() - 1);
 	}
 
 	public void refreshComboList(){
-		horseNames = new String[racingPanel.getHorses().length + 1];
+//		horseNames = new String[racingPanel.getHorses().length + 1];
 		horseList1.removeAllItems();
-		horseList1.addItem("ì„ íƒì•ˆí•¨");
+		horseList1.addItem("¼±ÅÃ¾ÈÇÔ   ");
 		for(int i = 0; i < racingPanel.getHorses().length; i++){
-			horseList1.addItem(racingPanel.getHorses()[i].getName());
+			String name = (i+1) + " : " + racingPanel.getHorses()[i].getName();
+			String bettingRate = " (¹è´ç·ü : " +new DecimalFormat("#.##").format(racingPanel.getHorses()[i].getBettingRate()) + ")";  
+			horseNames[i+1] =  name + bettingRate;
+			horseList1.addItem(horseNames[i+1]);
 		}
 		
-		horseList2.removeAllItems();
-		horseList2.addItem("ì„ íƒì•ˆí•¨");
-		for(int i = 0; i < racingPanel.getHorses().length; i++){
-			horseList2.addItem(racingPanel.getHorses()[i].getName());
-		}
-		
+//		horseList2.removeAllItems();
+//		horseList2.addItem("¼±ÅÃ¾ÈÇÔ    ");
+//		for(int i = 0; i < racingPanel.getHorses().length; i++){
+//			horseList2.addItem(racingPanel.getHorses()[i].getName());
+//		}
 		
 	}
 
 	@Override
 	public void actionPerformed(ActionEvent e) {
-//		TODO : 1ìœ„ì™€ 2ìœ„ì— ì¤‘ë³µëœ ê²½ì£¼ë§ˆë¥¼ ê±¸ì§€ ëª»í•˜ë„ë¡ ì„¤ì •í•´ì•¼ í•¨.
+//		TODO : 1À§¿Í 2À§¿¡ Áßº¹µÈ °æÁÖ¸¶¸¦ °ÉÁö ¸øÇÏµµ·Ï ¼³Á¤ÇØ¾ß ÇÔ.
 		
 		try{
-//			ê²½ì£¼ë§ˆë¥¼ ì„ íƒí•˜ì§€ ì•Šìœ¼ë©´ ì—ëŸ¬ë©”ì„¸ì§€
+//			°æÁÖ¸¶¸¦ ¼±ÅÃÇÏÁö ¾ÊÀ¸¸é ¿¡·¯¸Ş¼¼Áö
 			if(horseList1.getSelectedIndex() == 0){
-				JOptionPane.showMessageDialog(null, "ê²½ì£¼ë§ˆë¥¼ ì„ íƒí•˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤.");
+				JOptionPane.showMessageDialog(null, "°æÁÖ¸¶¸¦ ¼±ÅÃÇÏÁö ¾Ê¾Ò½À´Ï´Ù.");
 				return;
 			}
-//			ë°°íŒ…ê¸ˆì•¡ì´ ì—†ìœ¼ë©´ ì—ëŸ¬ë©”ì„¸ì§€
+//			¹èÆÃ±İ¾×ÀÌ ¾øÀ¸¸é ¿¡·¯¸Ş¼¼Áö
 			if(bettingValField.getText().trim().equals("")){
-				JOptionPane.showMessageDialog(null, "ë°°íŒ… ê¸ˆì•¡ì„ ì„¤ì •í•˜ì—¬ ì£¼ì‹­ì‹œì˜¤.");
-				bettingValField.requestFocus();
-				return;
-			}
-//			ê¸ˆì•¡ì´ 0ë³´ë‹¤ ì‘ê±°ë‚˜ ê°™ìœ¼ë©´ ì—ëŸ¬ë©”ì„¸ì§€
-			if( bettingValField.getText().trim().equals("0") || Integer.parseInt(bettingValField.getText().trim()) < 0){
-				JOptionPane.showMessageDialog(null, "ë°°íŒ…ê¸ˆì•¡ì€ 0ì› ë³´ë‹¤ ì»¤ì•¼ í•©ë‹ˆë‹¤.");
+				JOptionPane.showMessageDialog(null, "¹èÆÃ ±İ¾×À» ¼³Á¤ÇÏ¿© ÁÖ½Ê½Ã¿À.");
 				bettingValField.setText("");
 				bettingValField.requestFocus();
 				return;
 			}
-//			ê¸ˆì•¡ ì´ˆê³¼
+//			±İ¾×ÀÌ 0º¸´Ù ÀÛ°Å³ª °°À¸¸é ¿¡·¯¸Ş¼¼Áö
+			if( bettingValField.getText().trim().equals("0") || Integer.parseInt(bettingValField.getText().trim()) < 0){
+				JOptionPane.showMessageDialog(null, "¹èÆÃ±İ¾×Àº 0¿ø º¸´Ù Ä¿¾ß ÇÕ´Ï´Ù.");
+				bettingValField.setText("");
+				bettingValField.requestFocus();
+				return;
+			}
+//			±İ¾× ÃÊ°ú
 			if(Integer.parseInt(bettingValField.getText().trim()) > MainFrame.getUser().getBalance()){
-				JOptionPane.showMessageDialog(null, "ë°°íŒ… ê¸ˆì•¡ì´ ì‚¬ìš©ìì˜ ì”ì•¡ë³´ë‹¤ ë§ìŠµë‹ˆë‹¤.");
+				JOptionPane.showMessageDialog(null, "¹èÆÃ ±İ¾×ÀÌ »ç¿ëÀÚÀÇ ÀÜ¾×º¸´Ù ¸¹½À´Ï´Ù.");
 				bettingValField.setText(MainFrame.getUser().getBalance()+ "");
 				bettingValField.requestFocus();
 				return;
 			}
-//			ë””ë²„ê·¸ë¥¼ ìœ„í•´ ì„ íƒê°’ì´ ì œëŒ€ë¡œ ì„¤ì •ë˜ì—ˆëŠ”ì§€ ì¶œë ¥
-//			ì´í›„ì— ì‚­ì œ ìš”ë§.
-			System.out.println(racingPanel.getHorses()[horseList1.getSelectedIndex()-1].getName() + "ì— "
-					+ Integer.parseInt(bettingValField.getText().trim()) + "ì›ì„ ê±¸ì—ˆìŠµë‹ˆë‹¤.");
+			
 			
 		}catch(NumberFormatException e1){
-//			ë°°íŒ…ê¸ˆì•¡ì„ parsingí•˜ëŠ” ê³¼ì •ì—ì„œ ë°°íŒ…ê¸ˆì•¡ì— ìˆ«ìê°€ ì•„ë‹Œ ë¬¸ìì—´ì´ ë“¤ì–´ê°€ íŒŒì‹±ì´ ì•ˆë˜ë©´ ì˜ˆì™¸ì²˜ë¦¬ë¥¼ í•œë‹¤.
-			JOptionPane.showMessageDialog(null, "ê¸ˆì•¡ì€ ìˆ«ìë§Œ ì…ë ¥í•  ìˆ˜ ìˆìŠµë‹ˆë‹¤.");
+//			¹èÆÃ±İ¾×À» parsingÇÏ´Â °úÁ¤¿¡¼­ ¹èÆÃ±İ¾×¿¡ ¼ıÀÚ°¡ ¾Æ´Ñ ¹®ÀÚ¿­ÀÌ µé¾î°¡ ÆÄ½ÌÀÌ ¾ÈµÇ¸é ¿¹¿ÜÃ³¸®¸¦ ÇÑ´Ù.
+			JOptionPane.showMessageDialog(null, "±İ¾×Àº ¼ıÀÚ¸¸ ÀÔ·ÂÇÒ ¼ö ÀÖ½À´Ï´Ù.");
 			bettingValField.setText("");
 			bettingValField.requestFocus();
 			return;
+		}try{
+			mainFrame.getLogPanel().setBetResult((int)(racingPanel.getHorses()[horseList1.getSelectedIndex() - 1].getBettingRate() * Integer.parseInt(bettingValField.getText().trim())));
+		}catch(NumberFormatException e1){
+			System.out.println("NumberFormatException");
+			mainFrame.getLogPanel().setBetResult(0);
 		}
+		mainFrame.setRunningState(CheerUp.READY);
+		mainFrame.setCheeringName(racingPanel.getHorses()[horseList1.getSelectedIndex() - 1].getName());
 		Thread thread = new Thread(racingPanel);
 		thread.start();
 		
@@ -525,72 +707,94 @@ class MenuPanel extends JPanel implements ActionListener{
 		bettingValField.setEnabled(false);
 			
 	}
+
+	
 	
 	public void racingResult(){
-//		ë©”ë‰´ì—ì„œ ë°°íŒ…ì˜ ì •ë³´ë¥¼ ëª¨ë‘ ê°€ì§€ê³  ìˆê¸° ë•Œë¬¸ì— ê²°ê³¼ ì²˜ë¦¬ë¥¼ ë‹¤ì‹œ ë°›ì•„ì˜¨ë‹¤.
-//		1. ë°°íŒ…ê²°ê³¼ ë°°ë¶„ -> ë­í‚¹ ê²°ê³¼ì— ë”°ë¼ ë°°íŒ…ê¸ˆì•¡ì„ user ì—ê²Œ ë°°ë¶„í•œë‹¤.
-//			1-1. ìˆœìœ„ ë¹„êµ -> ë°°íŒ…í•œ ë§ì˜ ìˆœìœ„ë¥¼ ë§ì¶”ì—ˆìœ¼ë©´ ë°°íŒ…ê¸ˆì•¡ë§Œí¼ ëŒë ¤ì¤€ë‹¤.
-//		2. ë²„íŠ¼ í™œì„±í™” -> ì´ì¤‘ ì“°ë ˆë“œ ì‹¤í–‰ì„ ë§‰ê¸° ìœ„í•´ ë¹„í™œì„±í™” í•œ ë²„íŠ¼ê³¼ ì½¤ë³´ë°•ìŠ¤ë“¤ì„ ê²½ê¸° ì¢…ë£Œ í›„ ë‹¤ì‹œ í™œì„±í™” í•œë‹¤.
-//		3. userì˜ ì”ì•¡ ì¬í‘œì‹œ -> ë°°íŒ… ê²°ê³¼ì— ë”°ë¥¸ ì”ì•¡ì„ ë‹¤ì‹œ refreshí•œë‹¤.
-//		4. íŒŒì‚°ì¼ ê²½ìš° ì—ëŸ¬ë©”ì„¸ì§€ ì¶œë ¥ê³¼ ê²Œì„ ì¢…ë£Œ
-
-//		ë°°íŒ…ê²°ê³¼ ë° ìˆœìµë¶„ë°°
-		double bettingRate = RacingPanel.getHorses()[horseList1.getSelectedIndex()-1].getBettingRate();
-		int bettingResult = 0;
-		int winner = RacingPanel.getRank()[0];
-		String resultStr = "ìš°ìŠ¹ì€ " + (winner+1) + "ë²ˆ íŠ¸ë™ì˜ ë§ " + RacingPanel.getHorses()[winner].getName()+" ì…ë‹ˆë‹¤.";
-		if(RacingPanel.getRank()[0]+1 == horseList1.getSelectedIndex()){
-//			1ìœ„ì˜ ë§ì„ ë§ì¶”ë©´ ë°°íŒ…ë¥ ë§Œí¼ ëŒë ¤ì¤€ë‹¤.
-//			í˜„ì¬ ì„ì‹œë¡œ ë°°íŒ…ë¥ ì€ 100%ë¡œ ì„¤ì •í•´ë†“ëŠ”ë‹¤.
+//		¸Ş´º¿¡¼­ ¹èÆÃÀÇ Á¤º¸¸¦ ¸ğµÎ °¡Áö°í ÀÖ±â ¶§¹®¿¡ °á°ú Ã³¸®¸¦ ´Ù½Ã ¹Ş¾Æ¿Â´Ù.
+//		1. ¹èÆÃ°á°ú ¹èºĞ -> ·©Å· °á°ú¿¡ µû¶ó ¹èÆÃ±İ¾×À» user ¿¡°Ô ¹èºĞÇÑ´Ù.
+//			1-1. ¼øÀ§ ºñ±³ -> ¹èÆÃÇÑ ¸»ÀÇ ¼øÀ§¸¦ ¸ÂÃß¾úÀ¸¸é ¹èÆÃ±İ¾×¸¸Å­ µ¹·ÁÁØ´Ù.
+//		2. ¹öÆ° È°¼ºÈ­ -> ÀÌÁß ¾²·¹µå ½ÇÇàÀ» ¸·±â À§ÇØ ºñÈ°¼ºÈ­ ÇÑ ¹öÆ°°ú ÄŞº¸¹Ú½ºµéÀ» °æ±â Á¾·á ÈÄ ´Ù½Ã È°¼ºÈ­ ÇÑ´Ù.
+//		3. userÀÇ ÀÜ¾× ÀçÇ¥½Ã -> ¹èÆÃ °á°ú¿¡ µû¸¥ ÀÜ¾×À» ´Ù½Ã refreshÇÑ´Ù.
+//		4. ÆÄ»êÀÏ °æ¿ì ¿¡·¯¸Ş¼¼Áö Ãâ·Â°ú °ÔÀÓ Á¾·á
+							
+		
+		double bettingRate = racingPanel.getHorses()[horseList1.getSelectedIndex()-1].getBettingRate();			//¹è´ç·ü
+		int moneyToGet;
+		moneyToGet= (int)(Integer.parseInt(bettingValField.getText().trim()) * (int)bettingRate);
+		
+		
+//		¹èÆÃ°á°ú ¹× ¼øÀÍºĞ¹è
+		int bettingResult = 0;				//¹èÆÃÀ¸·Î¹Ş´Â ±İ¾×
+		mainFrame.getLogPanel().setBetResult(moneyToGet);
+		int winner = racingPanel.getRank()[0];			//1µî¸»À» ¾Ë·ÁÁØ´Ù. 
+		String resultStr = "¿ì½ÂÀº " + (winner+1) + "¹ø Æ®·¢ÀÇ ¸» " + racingPanel.getHorses()[winner].getName()+" ÀÔ´Ï´Ù.";
+		if(racingPanel.getRank()[0] == horseList1.getSelectedIndex() - 1){
+//			1À§ÀÇ ¸»À» ¸ÂÃß¸é ¹èÆÃ·ü¸¸Å­ µ¹·ÁÁØ´Ù.
+//			ÇöÀç ÀÓ½Ã·Î ¹èÆÃ·üÀº 100%·Î ¼³Á¤ÇØ³õ´Â´Ù.
 			bettingResult = (int)(Integer.parseInt(bettingValField.getText().trim()) * bettingRate);
-			resultStr += "\nì¶•í•˜í•©ë‹ˆë‹¤! 1ë“±ì„  ë§ì¶”ì…¨ìŠµë‹ˆë‹¤!";
+			resultStr += "\nÃàÇÏÇÕ´Ï´Ù! 1µîÀ»  ¸ÂÃß¼Ì½À´Ï´Ù!";
+			
 		}
 		else{
 			bettingResult = -1 * (int)(Integer.parseInt(bettingValField.getText().trim()) );
-			resultStr += "\nì•„ì‰½ê²Œë„ 1ë“±ì„  ë§ì¶”ì§€ ëª»í•˜ì…¨ìŠµë‹ˆë‹¤.";
+			resultStr += "\n¾Æ½±°Ôµµ 1µîÀ»  ¸ÂÃßÁö ¸øÇÏ¼Ì½À´Ï´Ù.";
 		}
 		
 		if(horseList2.getSelectedIndex() != 0){
-//			2ìœ„ì˜ ë§ì— ë°°íŒ…í–ˆì„ ê²½ìš° ì¶”ê°€ ë°°íŒ…
-			bettingRate = RacingPanel.getHorses()[horseList2.getSelectedIndex()-1].getBettingRate();
-			if(RacingPanel.getRank()[1]+1 == horseList2.getSelectedIndex()){
-//			2ìœ„ì˜ ë§ì„ ë§ì¶”ë©´ ë°°íŒ…ë¥ ë§Œí¼ ëŒë ¤ì¤€ë‹¤.
-//			í˜„ì¬ ì„ì‹œë¡œ ë°°íŒ…ë¥ ì€ 100%ë¡œ ì„¤ì •í•´ë†“ëŠ”ë‹¤.
+//			2À§ÀÇ ¸»¿¡ ¹èÆÃÇßÀ» °æ¿ì Ãß°¡ ¹èÆÃ
+			bettingRate = racingPanel.getHorses()[horseList2.getSelectedIndex()-1].getBettingRate();
+			if(racingPanel.getRank()[1]+1 == horseList2.getSelectedIndex()){
+//			2À§ÀÇ ¸»À» ¸ÂÃß¸é ¹èÆÃ·ü¸¸Å­ µ¹·ÁÁØ´Ù.
+//			ÇöÀç ÀÓ½Ã·Î ¹èÆÃ·üÀº 100%·Î ¼³Á¤ÇØ³õ´Â´Ù.
 				bettingResult += (int)(Integer.parseInt(bettingValField.getText().trim()) * bettingRate);
-				resultStr += "\n2ë“±ì„  ë§ì¶”ì…¨ìŠµë‹ˆë‹¤!";
+				resultStr += "\n2µîÀ»  ¸ÂÃß¼Ì½À´Ï´Ù!";
 			}
 			else{
 				bettingResult += -1 * (int)(Integer.parseInt(bettingValField.getText().trim()));
-				resultStr += "\n2ë“±ì„  ë§ì¶”ì§€ ëª»í•˜ì…¨ìŠµë‹ˆë‹¤.";
+				resultStr += "\n2µîÀ»  ¸ÂÃßÁö ¸øÇÏ¼Ì½À´Ï´Ù.";
 			}
 		}
-//		TODO : 1,000 ì²˜ëŸ¼ ì²œì˜ ìë¦¬ë§ˆë‹¤ , ì°ê¸°.
+//		TODO : 1,000 Ã³·³ ÃµÀÇ ÀÚ¸®¸¶´Ù , Âï±â.
 		MainFrame.getUser().addBalance(bettingResult);
-		resultStr += "\nì´ ìˆ˜ì…ì€ " + bettingResult + "ì› ì”ê³ ëŠ” " + MainFrame.getUser().getBalance()+"ì› ì…ë‹ˆë‹¤.";
+		resultStr += "\nÃÑ ¼öÀÔÀº " + bettingResult + "¿ø ÀÜ°í´Â " + MainFrame.getUser().getBalance()+"¿ø ÀÔ´Ï´Ù.";
 		JOptionPane.showMessageDialog(null, resultStr);
 		
-//		Userì˜ ì”ì•¡ ì¬í‘œì‹œ
-		amountLabel.setText("ë‚¨ì€ ê¸ˆì•¡ : "+ MainFrame.getUser().getBalance() + "ì›");
+//		UserÀÇ ÀÜ¾× ÀçÇ¥½Ã
+//		¹èÆÃ±İ¾× 
 		
-//		íŒŒì‚°ì¼ ê²½ìš° ì—ëŸ¬ë©”ì„¸ì§€ì™€ ê²Œë° ì¢…ë£Œ
+		
+//		(¼¼È£)	¶óº§À» ¼öÁ¤ÇÑ´Ù. 
+		if(bettingResult > 0){
+			mainFrame.getLogPanel().addTotalIncome(bettingResult);
+		}else{
+			mainFrame.getLogPanel().addTotalLoss(-1 * bettingResult);
+		}
+		amountLabel.setText("³²Àº ±İ¾× : "+ MainFrame.getUser().getBalance() + "¿ø");				//ÇöÀç ³²Àº µ· 
+		
+//		ÆÄ»êÀÏ °æ¿ì ¿¡·¯¸Ş¼¼Áö¿Í °Ô¹Ö Á¾·á
 		if(MainFrame.getUser().getBalance() <= 0){
-//			
-			JOptionPane.showMessageDialog(null, "íŒŒì‚°í•˜ì˜€ìŠµë‹ˆë‹¤.");
-			JFrame frame = new JFrame("ì§€ê¸ˆ í•œê°• ì˜¨ë„ëŠ”");
+			mainFrame.setRunningState(CheerUp.LOSE);
+			JOptionPane.showMessageDialog(null, "ÆÄ»êÇÏ¿´½À´Ï´Ù.");
+			JFrame frame = new JFrame("Áö±İ ÇÑ°­ ¿Âµµ´Â");
 			frame.setBounds(700, 300, HangangPanel.WIDHT, HangangPanel.HEIGHT);
 			frame.add(new HangangPanel());
 			frame.setVisible(true);
 			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		}
 		
-//		ë²„íŠ¼ í™œì„±í™”
+//		¹öÆ° È°¼ºÈ­
 		selectButton.setEnabled(true);
 		horseList1.setEnabled(true);
 		horseList2.setEnabled(true);
 		bettingValField.setEnabled(true);
+		bettingValField.setText("");
+	}
+
+	public JTextField getBettingValField() {		//logpanel¿¡¼­ ¾µ ¹èÆÃ°ª (¼¼È£)
+		return bettingValField;
 	}
 }
-
 
 class HorseInfoPanel extends JPanel implements Runnable{
 
@@ -603,7 +807,11 @@ class HorseInfoPanel extends JPanel implements Runnable{
 	private JLabel speed = new JLabel("");
 	private JLabel rank = new JLabel("");
 	private JLabel style = new JLabel("");
+	private JLabel bettingRate = new JLabel("");
 	
+	public HorseInfoPanel(Object horse){
+		this((Horse)horse);
+	}
 	public HorseInfoPanel(Horse horse) {
 		this.horse = horse;
 		setLayout(new GridLayout(1, 2));
@@ -615,23 +823,26 @@ class HorseInfoPanel extends JPanel implements Runnable{
 		add(infoPanel);
 		
 		Font font = new Font("Dialog", Font.PLAIN, 14);
-		infoPanel.setLayout(new GridLayout(5,1));
-		number.setText("ë²ˆí˜¸ : " + horse.getTrackNumber() + "ë²ˆ");
-		name.setText("ì´ë¦„ : " + horse.getName());
-		speed.setText("ìŠ¤í”¼ë“œ : " + horse.getRunningPattern().getAvgSpeed() * 2 + " km/h");
-		rank.setText("ë“±ê¸‰ : " + horse.getRunningPattern().getRank());
-		style.setText("ìŠ¤íƒ€ì¼ : " + horse.getRunningPattern().getPatternName());
+		infoPanel.setLayout(new GridLayout(6,1));
+		number.setText("¹øÈ£ : " + horse.getTrackNumber() + "¹ø");
+		name.setText("ÀÌ¸§ : " + horse.getName());
+		speed.setText("½ºÇÇµå : " + horse.getRunningPattern().getAvgSpeed() * 2 + " km/h");
+		rank.setText("µî±Ş : " + horse.getRunningPattern().getRank());
+		style.setText("½ºÅ¸ÀÏ : " + horse.getRunningPattern().getPatternName());
+		bettingRate.setText("¹è´ç·ü : " + new DecimalFormat("#.##").format(horse.getBettingRate()));
 		
 		number.setFont(font);
 		name.setFont(font);
 		speed.setFont(font);
 		rank.setFont(font);
 		rank.setFont(font);
+		bettingRate.setFont(font);
 		
 		infoPanel.add(name);
 		infoPanel.add(speed);
 		infoPanel.add(rank);
 		infoPanel.add(style);
+		infoPanel.add(bettingRate);
 	}
 	
 	@Override
@@ -652,10 +863,10 @@ class HorseInfoPanel extends JPanel implements Runnable{
 		g.setColor(Color.CYAN);
 		g.drawImage(horse.getImageInfo().getImage(),						// Image
 				0, HEIGHT/2 - horseSize/2 - 50 , WIDTH/2-20, HEIGHT/2 + horseSize/2 - 50,
-				horse.getImageInfo().getStartX(),							// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ì‹œì‘ X ì¢Œí‘œ
-				horse.getImageInfo().getStartY(),							// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ì‹œì‘ Y ì¢Œí‘œ
-				horse.getImageInfo().getEndX(),								// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ë X ì¢Œí‘œ
-				horse.getImageInfo().getEndY(),								// ì½ê¸° ì‹œì‘í•  ì›ë³¸ ì´ë¯¸ì§€ì˜ ë Y ì¢Œí‘œ
+				horse.getImageInfo().getStartX(),							// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ½ÃÀÛ X ÁÂÇ¥
+				horse.getImageInfo().getStartY(),							// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ½ÃÀÛ Y ÁÂÇ¥
+				horse.getImageInfo().getEndX(),								// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ³¡ X ÁÂÇ¥
+				horse.getImageInfo().getEndY(),								// ÀĞ±â ½ÃÀÛÇÒ ¿øº» ÀÌ¹ÌÁöÀÇ ³¡ Y ÁÂÇ¥
 				this);
 	}
 }
@@ -669,7 +880,7 @@ class HangangPanel extends JPanel implements Runnable{
 	private int thermo_ypos = 260;		//	260 -> 160
 	private int thermo_length = 0;		// 	0 -> 100
 	private double thermo_temp = 0;		//	0 -> getHangangTemp()
-	private String tempString = thermo_temp + "â„ƒ ì…ë‹ˆë‹¤.";
+	private String tempString = thermo_temp + "¡É ÀÔ´Ï´Ù.";
 	private String tempTime = "";
 	public HangangPanel() {
 		
@@ -689,23 +900,23 @@ class HangangPanel extends JPanel implements Runnable{
 		g.drawImage(bg, 0,0, WIDHT, HEIGHT, this);
 		g.setColor(Color.BLACK);
 		g.setFont(new Font("Dialog", Font.BOLD, 32));
-		g.drawString("ì§€ê¸ˆ í•œê°• ìˆ˜ì˜¨ì€" , 168, 101);
+		g.drawString("Áö±İ ÇÑ°­ ¼ö¿ÂÀº" , 168, 101);
 		g.setColor(Color.BLACK);
 		g.setFont(new Font("Dialog", Font.BOLD, 32));
 		g.drawString(tempString, 188, 138);
-//		ì‹œê°„
+//		½Ã°£
 		g.setFont(new Font("Dialog", Font.PLAIN, 16));
 		g.drawString(tempTime, 190, 190);
 		
-//		ì˜¨ë„ê³„
+//		¿Âµµ°è
 		g.setColor(Color.WHITE);
 		g.fillOval(100, 250 , 50, 50);
 		g.fillRect(113, 80, 25, 200);
-//		ë¹¨ê°„ìƒ‰ ìˆ˜ì€		
+//		»¡°£»ö ¼öÀº		
 		g.setColor(Color.RED);
 		g.fillOval(106, 257 , 40, 40);
 		g.fillRect(119, thermo_ypos, 12, thermo_length);
-//		ëˆˆê¸ˆ
+//		´«±İ
 		g.setColor(Color.BLACK);
 		for(int i=1; i < 28; i++){
 			g.fillRect(113, 80 + i * 6, 7, 2);
@@ -717,13 +928,328 @@ class HangangPanel extends JPanel implements Runnable{
 			thermo_temp = (double)HangangTempGetter.getHangangTemp() / 100 * temp;
 			thermo_ypos--;
 			thermo_length++;
-			tempString = String.format("%.2fâ„ƒ ì…ë‹ˆë‹¤.", thermo_temp); 
+			tempString = String.format("%.2f¡É ÀÔ´Ï´Ù.", thermo_temp); 
 			repaint();
 			try { Thread.sleep(10); } catch (InterruptedException e) { e.printStackTrace(); }
 		}
-		tempTime = HangangTempGetter.getHangangTime() + " ê¸°ì¤€";
+		tempTime = HangangTempGetter.getHangangTime() + " ±âÁØ";
 		repaint();
 	}
 		
+	
+}
+
+//-------------------------------------------------------Çöµµ
+class CheerUp extends JPanel implements Runnable {
+	
+	private MainFrame frame;
+	private JLabel cheeruplabel;
+
+	public static final int WAITING = 0;
+	public static final int READY = 1;
+	public static final int RUNNING = 2;
+	public static final int WINNING = 3;
+	public static final int WIN = 4;
+	public static final int LOSE = 5;
+	
+	private int cheerUpState = WAITING;
+	
+	private Random random = new Random();
+	private String[] wait = {"´ë±âÁß", "¸» °í¸£´ÂÁß", "½ÃÀÛÇØ º¸½Ç±î?", "ÀÌ¹ø¿£ ²À µû°í ¸»²¨¾ß"};
+	private String[] ready = {" ³Ê·Î Á¤Çß´Ù!", " ³Ê¶ó¸é ÇØ³¾°Å¾ß!", " ³Ê¸¸ ¹Ï´Â´Ù!"};
+	private String[] running = {" Èû³»!!"," Á¶±İ¸¸ ´õ Èû³»!!"," Á¥¸Ô´ø ÈûÁ» ³»ºÁ!"," ´õ »¡¸®!"," Á¶±İ¸¸ ´õ »¡¸®!"," ´Ş·Á!!"};
+	private String[] winning = {" ÀßÇÑ´Ù!", " ´Ï°¡ 1µîÀÌ¾ß", " ÀÌ´ë·Î¸¸ °¡!", " °ğ ¿ì½ÂÀÌ¾ß!"};
+	private String[] win = {"ÇØ³Â´Ù!", "¶¤´Ù!", "¾ó¾¾±¸ ÁÁ±¸³ª!", "Á¸³ªÁÁ±º?", "¾Ñ½Î ÁÁ±¸³ª!"};
+	private String[] lose = {"¾ÈµÅ", "¸ÁÇß¾î¿ä", "À¸À½ ¿À´Ã ÇÑ°­ µû¼ü³ª?", "´Ù ÀÒ¾ú¾î!"}; 
+	private Thread thread;
+	private String horseName = "";
+	private boolean nameChangeFlag = true;
+	
+	
+	public CheerUp(MainFrame frame){
+		this.frame = frame;
+//		setPreferredSize(new Dimension(50, 50));
+		cheeruplabel = new JLabel("");
+		add(cheeruplabel);
+		thread = new Thread(this);
+		thread.start();
+		cheeruplabel.setHorizontalAlignment(JLabel.CENTER);
+		cheeruplabel.setFont(new Font("Dialog", Font.BOLD, 20));
+	}
+	
+	@Override
+	public void run() {
+		int pastState = -1;
+		String pastName = "";
+		String str = "";
+		while(true){
+			int duration = 100;
+			setBackground(Color.white);
+			switch(cheerUpState){
+				case WAITING:
+					if(pastState != cheerUpState)  str = wait[new Random().nextInt(wait.length)]; break;
+				case READY:
+					if(pastState != cheerUpState || nameChangeFlag)  str = horseName + ready[new Random().nextInt(ready.length)]; break;
+				case WINNING:
+					if(pastState != cheerUpState)  str = horseName + winning[new Random().nextInt(winning.length)]; break;
+				case WIN:
+					if(pastState != cheerUpState)  str = win[new Random().nextInt(win.length)]; break;
+				case LOSE:
+					if(pastState != cheerUpState)  str = lose[new Random().nextInt(lose.length)]; break;
+//				´Ş¸®°í ÀÖ´Â °æ¿ì´Â °è¼Ó ¸»À» ¹Ù²ãÁØ´Ù.
+				case RUNNING:
+					str = horseName + running[new Random().nextInt(running.length)];
+					int r = random.nextInt(100) + 156;
+					int g = random.nextInt(100) + 156;
+					int b = random.nextInt(100) + 156;
+					setBackground(new Color(r, g, b));
+					duration = 1500;
+					break;
+			}
+			pastState = cheerUpState;
+			nameChangeFlag = false;
+			cheeruplabel.setHorizontalAlignment(JLabel.CENTER);
+			cheeruplabel.setText(str);
+			try {	Thread.sleep(duration);	} catch (InterruptedException e) {	e.printStackTrace(); }
+
+		}
+	}
+	
+	public void setHorseName(String horseName){
+		this.horseName = horseName;
+		nameChangeFlag = true;
+	}
+	
+	public void setRunningState(int state){
+		cheerUpState = state;
+	}
+}
+
+	
+
+//	±¤°íÆĞ³Î
+//	³²ÁÖ
+class AdvertisePanel extends JPanel implements Runnable{
+	MainFrame mainFrame;
+	Image[] images = new Image[4];
+	int w = 494, h = 150;
+	int count = 0;
+	String filename = "";
+	Thread thread = new Thread(this);
+	public AdvertisePanel(MainFrame mainFrame) {
+		this.mainFrame = mainFrame;
+		for(int i = 0; i<images.length; i++) {
+			filename = String.format("./src/pag%02d.jpg", i+1);
+			images[i] = Toolkit.getDefaultToolkit().getImage(filename);
+		}
+		thread.start();
+	}
+	
+	
+	@Override
+	public void paint(Graphics g) {
+//		super.paint(g);
+		g.drawImage(images[count % 4], 0, 0, this);
+	}
+	
+	@Override
+	public void run() {
+		int temp = count;
+		while(true) {
+			Horse[] horses = mainFrame.getRacingPanel().getHorses();
+			if(horses[0].getPosition_X() < RacingPanel.FINISH_POINT - 4000  ) {
+				count = 0;
+			} else if (horses[0].getPosition_X() < RacingPanel.FINISH_POINT - 3000 ) {
+				count = 1;
+			} else if(horses[0].getPosition_X() < RacingPanel.FINISH_POINT - 2000) {
+				count = 2;
+				
+			} else if(horses[0].getPosition_X() < RacingPanel.FINISH_POINT - 1000){
+				count = 3;				
+			}else {
+				count = 4;
+			}
+			repaint();
+			try { Thread.sleep(100); } catch (InterruptedException e) { e.printStackTrace(); }
+		}
+	}
+}
+
+
+class RankingPanel extends JPanel{
+	private JLabel rankingTitleLabel = new JLabel("¼øÀ§");			//	¼øÀ§ Á¦¸ñ ¶óº§ 
+	private MainFrame mainFrame;
+//	³²ÁÖ
+//	private static JLabel[] rankshowLabel;
+//	°´Ã¼ ¹è¿­ ¼±¾ğ¹ı
+//	Å¬·¡½º[] ¹è¿­ÀÌ¸§ = new Å¬·¡½º[¼ıÀÚ];
+//	¹è¿­ÀÌ¸§[i] = new Å¬·¡½º();
+	private JLabel[] rankshowLabel;		//	1À§·©Å· ¼øÀ§ ¼öÁ¤
+	private JPanel TitlePanel = new JPanel();					// ¼øÀ§ ÆĞ³Î
+	private JPanel TitleMenuPanel = new JPanel();				// µî¼öÇ¥½Ã  ÆĞ³Î
+	
+	public RankingPanel(int TOTAL_HORSE_NUMBER, MainFrame mainFrame){
+		this.mainFrame = mainFrame;
+		setPreferredSize(new Dimension(600, 300));
+		setLayout(new BorderLayout());
+		JPanel blankPanel = new JPanel();
+		blankPanel.setPreferredSize(new Dimension(100, 10));
+		add(blankPanel, BorderLayout.WEST);
+		add(TitlePanel, BorderLayout.NORTH);
+		add(TitleMenuPanel, BorderLayout.CENTER);
+//		TitlePanel.setLayout();
+		TitleMenuPanel.setLayout(new GridLayout(3, 2));
+		
+		TitlePanel.add(rankingTitleLabel);
+
+		rankshowLabel = new JLabel[TOTAL_HORSE_NUMBER];
+		for(int i = 0; i < rankshowLabel.length; i++){
+			rankshowLabel[i] = new JLabel((i+1) + "À§ : ");
+			TitleMenuPanel.add(rankshowLabel[i]);
+			rankshowLabel[i].setFont(new Font("Dialog", Font.BOLD, 20));
+		}
+		
+//		·©Å· ¼øÀ§ ¶óº§
+
+		rankingTitleLabel.setHorizontalAlignment(JLabel.CENTER);
+//		¼øÀ§¸¦ ÅØ½ºÆ®·Î Ç¥½ÃÇÏ±â À§ÇØ rankingLabelÀ» »ç¿ë
+//		¼øÀ§¸¦ °¢ ¶óº§·Î ³ª´µ¾î ±Û¾¾ Å©±â Á¶Á¤
+//		³²ÁÖ
+		rankingTitleLabel.setFont(new Font("Dialog", Font.BOLD, 28));
+	}
+	
+	public void printRanking(int[] rank){
+//		TODO
+//		4. ¼øÀ§Ç¥ ±ò²ûÇÏ°Ô
+//		ÇöÀç´Â ±×³É JLabel ÇÏ³ª¸¸ ÀÖ¾î¼­ ±ò²ûÇÏÁö ¸øÇÏ´Ù.
+//		rankingPanel ¾È¿¡ Layout ¼³Á¤À» ÇÏ°í JLabelÀ» °æÁÖ¸¶¼ö¸¸Å­ ³Ö¾î¼­ ¼øÀ§¸¦ µî·ÏÇÒ ¼ö ÀÖµµ·Ï ¼öÁ¤ÇÑ´Ù.
+		
+//		¼øÀ§¸¦ ½Ç½Ã°£À¸·Î Ç¥½ÃÇÏ±â À§ÇØ racingPanel¿¡¼­ È£Ãâ ÇÒ ¼ö ÀÖµµ·Ï staticÀ¸·Î ±¸ÇöÇÏ¿´´Ù.
+//		¿ø·¡´Â JLabel ÇÏ³ª¿¡ ¿©·¯ÁÙÀ» »ğÀÔÇÒ ¼ö ¾øÁö¸¸ ²Ä¼ö·Î HTMLÀ» »ç¿ëÇÏ¿© ¿©·¯ÁÙÀ» ³ÖÀ» ¼ö ÀÖ´Ù.
+//		<br>¸¶´Ù ÁÙ¹Ù²ŞÀÌ µÇ¸ç ¾Æ·¡¿Í °°Àº ¾ç½ÄÀ¸·Î ÀÛ¼ºÇÒ ¼ö ÀÖ´Ù.
+//		<HTML> ... <br> ... <br> ... </HTML>
+		
+//		³²ÁÖ
+		String strTitle = "¼øÀ§";
+		String[] str = new String[rank.length];
+		for(int i = 0; i < rank.length; i++){	
+			str[i] = i+1 + "À§ : " + mainFrame.getRacingPanel().getHorses()[rank[i]].getName() + "\n";
+
+			rankshowLabel[i].setText(str[i]);
+		}
+		
+	}
+
+}
+
+
+class LogPanel extends JPanel{
+
+	private int totalIncome = 0;
+	private int totalLoss = 0;
+	
+	private JPanel logMainPanel = new JPanel();
+	private JLabel betResultLabel = new JLabel("0¿ø");
+	private JLabel totalSuccessLabel = new JLabel(totalIncome + "¿ø");		
+	private JLabel totalFailLabel = new JLabel(totalLoss + "¿ø");
+	private DecimalFormat df = new DecimalFormat("#,##0");
+	
+	public LogPanel(MainFrame mainFrame) {
+		
+		setLayout(new BorderLayout());
+		JPanel blankPanel = new JPanel();
+		blankPanel.setPreferredSize(new Dimension(100, 10));
+		add(blankPanel, BorderLayout.WEST);
+		add(logMainPanel, BorderLayout.CENTER);
+		
+		
+		logMainPanel.setLayout(new GridLayout(3, 2));
+		logMainPanel.add(new JLabel("¹è´ç±İ (¼º°ø½Ã) : "));
+		logMainPanel.add(betResultLabel);
+		logMainPanel.add(new JLabel("µı ÃÑ¾× : "));
+		logMainPanel.add(totalSuccessLabel);
+		logMainPanel.add(new JLabel("ÀÒÀº ÃÑ¾× : "));
+		logMainPanel.add(totalFailLabel);
+	}
+	
+	public void setBetResult(int val){
+		betResultLabel.setText(df.format(val) + "¿ø");
+	}
+	public void setBetResult(String str){
+		betResultLabel.setText(str);
+	}
+	public void addTotalIncome(int val){
+		totalIncome += val;
+		totalSuccessLabel.setText(df.format(totalIncome) + "¿ø");
+	}
+	public void addTotalLoss(int val){
+		totalLoss += val;
+		totalFailLabel.setText(df.format(totalLoss) + "¿ø");
+	}
+
+}
+
+class TitleFrame extends JFrame{
+	private TitlePanel basePanel = new TitlePanel(this);
+	
+	public TitleFrame(){
+		setLayout(new BorderLayout());
+		
+		add(basePanel, BorderLayout.CENTER);
+		
+		setBounds(200,100, 1212, 728);
+		setVisible(true);
+		
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	}
+}
+
+class TitlePanel extends JPanel{
+	private Image background = Toolkit.getDefaultToolkit().getImage("./src/title.jpg"); 
+	private JPanel upPanel = new JPanel();
+	private JPanel centerPanel = new JPanel();
+	private JPanel westPanel = new JPanel();
+	private JPanel eastPanel = new JPanel();
+	private JPanel downPanel = new JPanel();
+	private JButton button = new JButton("Press Start");
+	private TitleFrame titleFrame;
+	public TitlePanel(TitleFrame titleFrame) {
+//		downPanel.setBackground(Color.PINK);
+//		upPanel.setBackground(Color.BLACK);
+//		westPanel.setBackground(Color.BLUE);
+		
+		this.titleFrame = titleFrame;
+		setLayout(new BorderLayout());
+		add(upPanel, BorderLayout.NORTH);
+		add(centerPanel, BorderLayout.CENTER);
+		add(westPanel, BorderLayout.WEST);
+		add(eastPanel, BorderLayout.EAST);
+		add(downPanel, BorderLayout.SOUTH);
+		
+		upPanel.setPreferredSize(new Dimension(1212, 398));
+		westPanel.setPreferredSize(new Dimension(400, 200));
+		eastPanel.setPreferredSize(new Dimension(400, 200));
+		downPanel.setPreferredSize(new Dimension(1212, 200));
+		centerPanel.setLayout(new GridLayout(1, 1));
+		centerPanel.add(button);
+		button.setFont(new Font("Dialog", Font.BOLD, 30));
+		button.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MainFrame mainFrame = new MainFrame();
+				titleFrame.setVisible(false);
+			}
+		});
+		repaint();
+		
+		
+	}
+	@Override
+	public void paint(Graphics g) {
+		super.paint(g);
+		g.drawImage(background, 0, 0, this);
+		centerPanel.repaint();
+	}
+	
 	
 }
